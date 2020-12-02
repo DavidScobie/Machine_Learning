@@ -1,6 +1,6 @@
-# UCL Module MPHY0041 Machine Learning in Medical Imaging
+# UCL Module MPHY0041: Machine Learning in Medical Imaging
 
-This is the repository for the part: **Deep Learning for Medical Imaging**  
+**Deep Learning for Medical Imaging**  
 
 **Lecturer:** Yipeng Hu (yipeng.hu@ucl.ac.uk)
 
