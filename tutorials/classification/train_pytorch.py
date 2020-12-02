@@ -2,38 +2,45 @@ import torch
 
 
 # define a vgg-16 net
-class VGG(torch.nn.Module, ch_in, ch_out):
-    def __init__(self):
-        super(VGG, self).__init__()
-        self.input_layer = conv2d_block(64, ch_in)
-        self.output_layer = torch.nn.Linear(512, ch_out)
+class VGGNet(torch.nn.Module):
+    def __init__(self, n_in, n_out):
+        super(VGGNet, self).__init__()
+        self.ns = [64, -64, 128, -128, 256, 256, -256, 512, 512, 512]  # pooling when negative
+        self.n_in = n_in 
+        self.n_out = n_out
 
     def forward(self, x):
-        cfg = [64, 64, 128, 128, 256, 256, 256, 512, 512, 512, 512, 512, 512]
-        '''
-        'VGG11': [64, 128, 256, 256, 512, 512, 512, 512],
-        'VGG13': [64, 64, 128, 128, 256, 256, 512, 512, 512, 512],
-        'VGG16': [64, 64, 128, 128, 256, 256, 256, 512, 512, 512, 512, 512, 512],
-        'VGG19': [64, 64, 128, 128, 256, 256, 256, 256, 512, 512, 512, 512, 512, 512, 512, 512],
-        '''
-        layers = self.input_layer(x)
-        for idx,x in enumerate(cfg):
-            layers += [conv2d_block()]
+        n_pre = self.n_in
+        layers = []
+        for _n in self.ns:
+            layers += self.conv2d_block(n_pre, abs(_n), _n<0)
+            n_pre = abs(_n)
         layers += [torch.nn.AvgPool2d(1)]
-
-        return self.output_layer(torch.nn.Sequential(*layers))
-
-    def conv2d_block(ch_out, ch_in, post_pooling=False):
-        block = [torch.nn.Conv2d(ch_in,ch_out,3), torch.nn.ReLU(), torch.nn.BatchNorm2d()]
+        x = torch.nn.Sequential(*layers)(x).flatten(1,3)
+        return torch.nn.Linear(x.shape[1], self.n_out)(x)
+        
+    def conv2d_block(self, ch_in, ch_out, post_pooling=False):
+        block = [torch.nn.Conv2d(ch_in,ch_out,3), torch.nn.ReLU(), torch.nn.BatchNorm2d(ch_out)]
         if post_pooling:
             block += [torch.nn.MaxPool2d(kernel_size=2, stride=2)]
         return block 
 
 
+model = VGGNet(3,4)
+model.train()
 
+criterion = torch.nn.CrossEntropyLoss(reduction='mean')
+optimizer = torch.optim.adam(model.parameters(), lr=1e-4)
+for t in range(500):
+    # Forward pass: Compute predicted y by passing x to the model
+    y_pred = model(x)
 
-        def test():
-    net = VGG('VGG11')
-    x = torch.randn(2,3,32,32)
-    y = net(x)
-    print(y.size())
+    # Compute and print loss
+    loss = criterion(y_pred, y)
+    if t % 100 == 99:
+        print(t, loss.item())
+
+    # Zero gradients, perform a backward pass, and update the weights.
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
