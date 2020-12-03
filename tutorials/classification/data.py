@@ -1,7 +1,7 @@
 
 import os
 from tensorflow.keras.utils import get_file
-
+# from torchvision.datasets.utils import download_and_extract_archive
 
 # specify two useful folders
 DATA_PATH = './data'
