@@ -3,26 +3,12 @@ import os
 import zipfile
 import requests
 
-'''
-# download data
-os.system('wget https://weisslab.cs.ucl.ac.uk/WEISSTeaching/datasets/-/archive/promise12/datasets-promise12.zip')
-os.system('mkdir data')
-os.system('unzip datasets-promise12.zip -d ./data')
-os.system('rm datasets-promise12.zip')
-os.system('mkdir result')
-'''
 
 DATA_PATH = './data'
 RESULT_PATH = './result'
 
 if not os.path.exists(DATA_PATH):
     os.makedirs(DATA_PATH)
-
-'''
-from tensorflow.keras.utils import get_file
-temp_file = get_file(fname='datasets-promise12.zip',
-                     origin='https://weisslab.cs.ucl.ac.uk/WEISSTeaching/datasets/-/archive/promise12/datasets-promise12.zip')
-'''
 
 print('Downloading and extracting data...')
 url = 'https://weisslab.cs.ucl.ac.uk/WEISSTeaching/datasets/-/archive/promise12/datasets-promise12.zip' 
