@@ -1,5 +1,10 @@
+# this is a demo script for UNet for 3d images
+import os
+
 import torch
 import numpy as np
+
+
 
 folder_name = './data/datasets-promise12'
 
@@ -23,13 +28,13 @@ class UNet(torch.nn.Module):
 
         self.bottleneck = UNet._block(n_feat*8, n_feat*16)
 
-        self.upconv4 = torch.nn.ConvTranspose3d(n_feat*16, n_feat*8, kernel_size=3, stride=2)
+        self.upconv4 = torch.nn.ConvTranspose3d(n_feat*16, n_feat*8, kernel_size=2, stride=2)
         self.decoder4 = UNet._block((n_feat*8)*2, n_feat*8)
-        self.upconv3 = torch.nn.ConvTranspose3d(n_feat*8, n_feat*4, kernel_size=3, stride=2)
+        self.upconv3 = torch.nn.ConvTranspose3d(n_feat*8, n_feat*4, kernel_size=2, stride=2)
         self.decoder3 = UNet._block((n_feat*4)*2, n_feat*4)
-        self.upconv2 = torch.nn.ConvTranspose3d(n_feat*4, n_feat*2, kernel_size=3, stride=2)
+        self.upconv2 = torch.nn.ConvTranspose3d(n_feat*4, n_feat*2, kernel_size=2, stride=2)
         self.decoder2 = UNet._block((n_feat*2)*2, n_feat*2)
-        self.upconv1 = torch.nn.ConvTranspose3d(n_feat*2, n_feat, kernel_size=3, stride=2)
+        self.upconv1 = torch.nn.ConvTranspose3d(n_feat*2, n_feat, kernel_size=2, stride=2)
         self.decoder1 = UNet._block(n_feat*2, n_feat)
 
         self.conv = torch.nn.Conv3d(in_channels=n_feat, out_channels=ch_out, kernel_size=1)
@@ -58,31 +63,25 @@ class UNet(torch.nn.Module):
 
     @staticmethod
     def _block(ch_in, n_feat):
-        return torch.nn.Sequential([
-                                    torch.nn.Conv3d(in_channels=ch_in, out_channels=n_feat, kernel_size=3, padding=1, bias=False),
-                                    torch.nn.BatchNorm3d(num_features=n_feat),
-                                    torch.nn.ReLU(inplace=True),
-                                    torch.nn.Conv3d(in_channels=n_feat, out_channels=n_feat, kernel_size=3, padding=1, bias=False),
-                                    torch.nn.BatchNorm3d(num_features=n_feat),
-                                    torch.nn.ReLU(inplace=True)
-                                    ])
+        return torch.nn.Sequential(
+            torch.nn.Conv3d(in_channels=ch_in, out_channels=n_feat, kernel_size=3, padding=1, bias=False),
+            torch.nn.BatchNorm3d(num_features=n_feat),
+            torch.nn.ReLU(inplace=True),
+            torch.nn.Conv3d(in_channels=n_feat, out_channels=n_feat, kernel_size=3, padding=1, bias=False),
+            torch.nn.BatchNorm3d(num_features=n_feat),
+            torch.nn.ReLU(inplace=True))
 
-class DiceLoss(torch.nn.Module):
-    def __init__(self):
-        super(DiceLoss, self).__init__()
-        self.smooth = 1.0
 
-    def forward(self, y_pred, y_true):
-        assert y_pred.size() == y_true.size()
-        y_pred = y_pred[:, 0].contiguous().view(-1)
-        y_true = y_true[:, 0].contiguous().view(-1)
-        intersection = (y_pred * y_true).sum()
-        dsc = (2. * intersection + self.smooth) / (y_pred.sum() + y_true.sum() + self.smooth)
-        return 1. - dsc
+def loss_dice(y_pred, y_true, eps=1e-6):
+    '''
+    y_pred, y_true -> [N, C=1, D, H, W]
+    '''
+    numerator = torch.sum(y_true*y_pred, dim=(2,3,4)) * 2
+    denominator = torch.sum(y_true, dim=(2,3,4)) + torch.sum(y_pred, dim=(2,3,4)) + eps
+    return torch.mean(1. - (numerator / denominator))
 
 
 def binary_dice(y_true, y_pred):
-    eps = 1e-6
     y_true = y_true >= 0.5
     y_pred = y_pred >= 0.5
     numerator = torch.sum(y_true * y_pred) * 2
@@ -90,53 +89,58 @@ def binary_dice(y_true, y_pred):
     if numerator == 0 or denominator == 0:
         return 0.0
     else:
-        return numerator * 1.0 / denominator
+        return numerator / denominator
 
 
 # now define a data loader
 class DatasetTrain(torch.utils.data.Dataset):
     def __init__(self, folder_name):
         self.folder_name = folder_name
+        self.num_images = 50
     
     def __len__(self):
-        return self.num_subjects = 50
+        return self.num_images
 
-    def __getitem__(self, index):
-        image = np.float32(np.load(os.path.join(self.folder_name, "image_train%02d.npy" % index)))
-        label = np.float32(np.load(os.path.join(self.folder_name, "label_train%02d.npy" % index)))       
-        return (image, label)
+    def __getitem__(self, idx):
+        image = self._load_npy("image_train%02d.npy" % idx)
+        label = self._load_npy("label_train%02d.npy" % idx)
+        return image, label
+    
+    def _load_npy(self, filename):
+        filename = os.path.join(self.folder_name, filename)
+        return torch.unsqueeze(torch.tensor(np.float32(np.load(filename))),dim=0)
 
 
 # image_test = np.float32(np.load(os.path.join(self.folder_name, "image_test%02d.npy" % 30)))     
 
 
 # training
-model = VGGNet(1,4)
+model = UNet(1,1)
 
-train_set = H5Dataset(filename)
+train_set = DatasetTrain(folder_name)
 train_loader = torch.utils.data.DataLoader(
     train_set,
-    batch_size=8, 
+    batch_size=2, 
     shuffle=True,
-    num_workers=8)
+    num_workers=2)
+
 '''
 dataiter = iter(train_loader)
-frames, labels = dataiter.next()
+images, labels = dataiter.next()
 '''
 
-criterion = torch.nn.CrossEntropyLoss(reduction='mean')
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-freq_print = 200
+freq_print = 10
 for epoch in range(20):
     for ii, data in enumerate(train_loader, 0):
         
         moving_loss = 0.0
-        frames, labels = data
+        images, labels = data
 
         optimizer.zero_grad()
-        outputs = model(frames)
-        loss = criterion(outputs, labels)
+        outputs = model(images)
+        loss = loss_dice(outputs, labels)
         loss.backward()
         optimizer.step()
 
