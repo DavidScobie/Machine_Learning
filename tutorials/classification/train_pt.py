@@ -65,8 +65,8 @@ frames, labels = dataiter.next()
 criterion = torch.nn.CrossEntropyLoss(reduction='mean')
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-freq_print = 200
-for epoch in range(20):
+freq_print = 10
+for epoch in range(200):
     for ii, data in enumerate(train_loader, 0):
         
         moving_loss = 0.0
@@ -80,7 +80,7 @@ for epoch in range(20):
 
         # Compute and print loss
         moving_loss += loss.item()
-        if ii % freq_print == (freq_print-1):    # print every 2000 mini-batches
+        if ii % freq_print == (freq_print-1):    # print every 20 mini-batches
             print('[Epoch %d, iter %05d] loss: %.3f' % (epoch, ii, moving_loss/freq_print))
             moving_loss = 0.0
 

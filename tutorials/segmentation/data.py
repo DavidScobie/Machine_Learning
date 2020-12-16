@@ -22,5 +22,5 @@ os.remove(temp_file)
 os.makedirs(RESULT_PATH)
 print('Done.')
 
-print('Promise12 data downloaded: <%s>.' % os.path.abspath(os.path.join(DATA_PATH,'datasets-promise12')))
-print('Result directory created: <%s>.' % os.path.abspath(RESULT_PATH))
+print('Promise12 data downloaded: %s' % os.path.abspath(os.path.join(DATA_PATH,'datasets-promise12')))
+print('Result directory created: %s' % os.path.abspath(RESULT_PATH))
