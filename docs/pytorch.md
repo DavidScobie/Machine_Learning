@@ -1,5 +1,10 @@
 
-# Example fron official pytorch tutorials
+# Get started with PyTorch with medical imaging
+
+## PyTorch as a paralell computing tool
+https://pytorch.org/
+
+## Example fron official pytorch tutorials
 
 Neural networks
 https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
