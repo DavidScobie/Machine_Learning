@@ -1,5 +1,5 @@
 
-# Get started with PyTorch with medical imaging
+# Learning PyTorch for Medical Imaging
 
 ## PyTorch as a paralell computing tool
 https://pytorch.org/

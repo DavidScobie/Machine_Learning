@@ -1,5 +1,5 @@
 
-# Get started with TensorFlow with medical imaging
+# Learning TensorFlow for Medical Imaging
 
 ## TensorFlow as a paralell computing tool
 https://www.tensorflow.org/

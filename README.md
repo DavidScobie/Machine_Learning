@@ -5,20 +5,19 @@
 **Lecturer:** Yipeng Hu (yipeng.hu@ucl.ac.uk)
 
 ## Development environments 
-There is no requirement, in tutorials or assessed coursework, for what the development environment that needs to be used. However, technical support from this module is available for the setups detailed under the `docs` folder.
 
 ### Python and conda environment
 The tutorials require a few dependencies, numpy, scipy, matplotlib, in addition to the deep learning framework  Individual tutorials may also require other libraries which will be specified in the readme.md in individual tutorial folders (see links below). Conda is recommended to set up the Python development environment with required dependencies. 
 
-The supported Python/conda environment is detailed in `docs/env.md` 
+There is no requirement, in tutorials or assessed coursework, for what the development environment that needs to be used. However, technical support from this module is available for the setups detailed in [Supported Development Environment](docs/env.md). 
 
 ### Deep learning frameworks
 Module tutorials are supported by both [TensorFlow](https://www.tensorflow.org/) or [PyTorch](https://pytorch.org/). 
 
 
-Learning materials for TensorFlow for Medical Imaging are recommended in `docs/tensorflow`.
+Learning materials for TensorFlow for Medical Imaging are recommended in [Learning TensorFlow for Medical Imaging](docs/tensorflow.md).
 
-Learning materials for PyTorch for Medical Imaging are recommended in `docs/pytorch`.
+Learning materials for PyTorch for Medical Imaging are recommended in [Learning PyTorch for Medical Imaging](docs/pytorch.md).
 
 
 ## Tutorials
