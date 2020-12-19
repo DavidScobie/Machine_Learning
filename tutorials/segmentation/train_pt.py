@@ -97,7 +97,7 @@ class DatasetTrain(torch.utils.data.Dataset):
     def __init__(self, folder_name):
         self.folder_name = folder_name
         self.num_images = 50
-    
+
     def __len__(self):
         return self.num_images
 
@@ -105,13 +105,13 @@ class DatasetTrain(torch.utils.data.Dataset):
         image = self._load_npy("image_train%02d.npy" % idx)
         label = self._load_npy("label_train%02d.npy" % idx)
         return image, label
-    
+
     def _load_npy(self, filename):
         filename = os.path.join(self.folder_name, filename)
         return torch.unsqueeze(torch.tensor(np.float32(np.load(filename))),dim=0)
 
 
-# image_test = np.float32(np.load(os.path.join(self.folder_name, "image_test%02d.npy" % 30)))     
+# image_test = np.float32(np.load(os.path.join(self.folder_name, "image_test%02d.npy" % 30)))
 
 
 # training
@@ -120,7 +120,7 @@ model = UNet(1,1)
 train_set = DatasetTrain(folder_name)
 train_loader = torch.utils.data.DataLoader(
     train_set,
-    batch_size=2, 
+    batch_size=2,
     shuffle=True,
     num_workers=2)
 
@@ -134,7 +134,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 freq_print = 10
 for epoch in range(20):
     for ii, data in enumerate(train_loader, 0):
-        
+
         moving_loss = 0.0
         images, labels = data
 
@@ -146,8 +146,8 @@ for epoch in range(20):
 
         # Compute and print loss
         moving_loss += loss.item()
-        if ii % freq_print == (freq_print-1):    # print every 2000 mini-batches
-            print('[Epoch %d, iter %05d] loss: %.3f' % (epoch, ii, moving_loss/freq_print))
+        if ii % freq_print == 0:    # print every freq_print mini-batches
+            print('[Epoch %d, iter %d] loss: %.5f' % (epoch, ii, moving_loss/freq_print))
             moving_loss = 0.0
 
 print('Training done.')
