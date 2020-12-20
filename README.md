@@ -54,13 +54,13 @@ python visualise.py
 ```
 
 ### 2D Image clssification
-[Anatomy classification on ultrasound images](tutorial/classification/readme.md)
+[Anatomy classification on ultrasound images](tutorials/classification/readme.md)
 
 ### 3D Image segmentation
-[Segmentation of organs on 3D MR images](tutorial/segmentation/readme.md)
+[Segmentation of organs on 3D MR images](tutorials/segmentation/readme.md)
 
 ### Image registration*
-[Unsupervised registration of CT image slices](tutorial/registration/readme.md)
+[Unsupervised registration of CT image slices](tutorials/registration/readme.md)
 
 ### Image synthesis*
-[Ultrasound image simulation](tutorial/synthesis/readme.md)
+[Ultrasound image simulation](tutorials/synthesis/readme.md)
