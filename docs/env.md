@@ -15,7 +15,8 @@ conda deactivate
 ```
 
 ### Optional - Install TensorFlow or PyTorch in `mphy0041` with GPU support
->:Note: the following instructions are example installation, which depends on the available CUDA versions.
+>**Note:** the following instructions are example installation, which depends on the available CUDA versions.
+
 For TensorFlow users, see [conda TensorFlow guide](https://docs.anaconda.com/anaconda/user-guide/tasks/tensorflow/), e.g.:
 ```bash
 conda install tensorflow-gpu -c anaconda 

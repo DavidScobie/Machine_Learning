@@ -71,7 +71,7 @@ freq_print = 10
 for epoch in range(200):
     for step, (frames, labels) in enumerate(train_loader):
         if use_cuda:
-            images, labels = images.cuda(), labels.cuda()
+            frames, labels = frames.cuda(), labels.cuda()
 
         optimizer.zero_grad()
         outputs = model(frames)
