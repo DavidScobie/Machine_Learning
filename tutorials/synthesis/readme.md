@@ -1,0 +1,1 @@
+This totualrial demonstrates an algorithm of ultrasound image simulation using conditional generative adversarial networks (GANs), implementing a simplified version of the algorithms described in [a published paper](https://arxiv.org/ftp/arxiv/papers/1707/1707.05392.pdf).

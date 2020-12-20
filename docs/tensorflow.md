@@ -1,17 +1,15 @@
 
 # Learning TensorFlow for Medical Imaging
 
-## Official TensorFlow documentation
+>Resources are for TensorFlow 2
 
-- [API]()
-- [Guide]()
-- [Tutorial]()
-- 
+## Official TensorFlow documentation
+- [Basic tutorial](https://www.tensorflow.org/tutorials)
+- [Guide](https://www.tensorflow.org/guide)
+- [Python API](https://www.tensorflow.org/versions)
 
 ## Examples in medical imaging applications
-
-Neural networks
-https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
-
-Image classifer
-https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
+- [Image classification](https://www.tensorflow.org/tutorials/images/classification)
+- [U-Net](https://www.tensorflow.org/tutorials/images/segmentation) for image segmnetation
+- [NiftyNet](https://github.com/NifTK/NiftyNet) for medical image classfiication and segmentation
+- [DeepReg](https://github.com/DeepRegNet/DeepReg) for 3D medical image registration 
