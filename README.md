@@ -52,4 +52,8 @@ python train_tf2.py
 
 ### 3D Image segmentation
 
-### Deep reinforcement learning
+### Unsupervised image registration*
+
+### Image synthesis using GANs*
+
+### Deep reinforcement learning*
