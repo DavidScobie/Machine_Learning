@@ -7,6 +7,7 @@ import numpy as np
 
 
 folder_name = './data/datasets-promise12'
+RESULT_PATH = './result'
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if use_cuda else "cpu")
@@ -93,61 +94,84 @@ def binary_dice(y_true, y_pred):
 
 
 # now define a data loader
-class DatasetTrain(torch.utils.data.Dataset):
-    def __init__(self, folder_name):
+class NPyDataset(torch.utils.data.Dataset):
+    def __init__(self, folder_name, is_train=True):
         self.folder_name = folder_name
-        self.num_images = 50
+        self.is_train = is_train
 
     def __len__(self):
-        return self.num_images
+        return (50 if self.is_train else 30)
 
     def __getitem__(self, idx):
-        image = self._load_npy("image_train%02d.npy" % idx)
-        label = self._load_npy("label_train%02d.npy" % idx)
-        return image, label
+        if self.is_train:
+            image = self._load_npy("image_train%02d.npy" % idx)
+            label = self._load_npy("label_train%02d.npy" % idx)
+            return image, label
+        else:
+            return self._load_npy("image_test%02d.npy" % idx)
 
     def _load_npy(self, filename):
         filename = os.path.join(self.folder_name, filename)
-        return torch.unsqueeze(torch.tensor(np.float32(np.load(filename))),dim=0)
-
-
-# image_test = np.float32(np.load(os.path.join(self.folder_name, "image_test%02d.npy" % 30)))
+        return torch.unsqueeze(torch.tensor(np.float32(np.load(filename)[::2,::2,::2])),dim=0)
 
 
 # training
 model = UNet(1,1)
+if use_cuda:
+    model.cuda()
 
-train_set = DatasetTrain(folder_name)
+train_set = NPyDataset(folder_name)
 train_loader = torch.utils.data.DataLoader(
     train_set,
-    batch_size=2,
+    batch_size=4,
     shuffle=True,
-    num_workers=2)
-
+    num_workers=4)
 '''
 dataiter = iter(train_loader)
 images, labels = dataiter.next()
+preds = model(images)
+'''
+
+# test/validation data
+test_set = NPyDataset(folder_name, is_train=False)
+test_loader = torch.utils.data.DataLoader(
+    test_set,
+    batch_size=4,
+    shuffle=False,
+    num_workers=4)
+'''
+dataiter = iter(test_loader)
+images_test = dataiter.next()
+preds_test = model(images_test)
 '''
 
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-freq_print = 10
+freq_print = 1  # in epoch
+freq_test = 2  # in epoch
 for epoch in range(20):
-    for ii, data in enumerate(train_loader, 0):
-
-        moving_loss = 0.0
-        images, labels = data
+    for step, (images, labels) in enumerate(train_loader):
+        if use_cuda:
+            images, labels = images.cuda(), labels.cuda()
 
         optimizer.zero_grad()
-        outputs = model(images)
-        loss = loss_dice(outputs, labels)
+        preds = model(images)
+        loss = loss_dice(preds, labels)
         loss.backward()
         optimizer.step()
 
         # Compute and print loss
-        moving_loss += loss.item()
-        if ii % freq_print == 0:    # print every freq_print mini-batches
-            print('[Epoch %d, iter %d] loss: %.5f' % (epoch, ii, moving_loss/freq_print))
-            moving_loss = 0.0
+        if (step==0) and (epoch%freq_print==0):    # print every freq_print mini-batches
+            print('[Epoch %d, step %d] loss: %.5f' % (epoch,step,loss.item()))
+        
+        # test data during training (no validation labels available)
+        if (step==0) and (epoch%freq_test==0):
+            for mb, images_test in enumerate(test_loader):
+                if use_cuda:
+                    images_test = images_test.cuda()
+                preds_test = model(images_test)
+                save_path = os.path.join(RESULT_PATH,'test_e{}s{}b{}.npy'.format(epoch,step,mb))
+                np.save(save_path, preds_test.detach().cpu().numpy().squeeze())
+                print('Test data saved: {}'.format(save_path))
 
 print('Training done.')
