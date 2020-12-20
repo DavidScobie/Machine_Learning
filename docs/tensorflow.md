@@ -1,10 +1,14 @@
 
 # Learning TensorFlow for Medical Imaging
 
-## TensorFlow as a paralell computing tool
-https://www.tensorflow.org/
+## Official TensorFlow documentation
 
-## Example fron official pytorch tutorials
+- [API]()
+- [Guide]()
+- [Tutorial]()
+- 
+
+## Examples in medical imaging applications
 
 Neural networks
 https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html

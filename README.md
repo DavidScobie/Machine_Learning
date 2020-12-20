@@ -48,12 +48,19 @@ or
 python train_tf2.py
 ```
 
+Example data and results can be visualised before or after training:
+``` bash
+python visualise.py
+```
+
 ### 2D Image clssification
+[Anatomy classification on ultrasound images](tutorial/classification/readme.md)
 
 ### 3D Image segmentation
+[Segmentation of organs on 3D MR images](tutorial/segmentation/readme.md)
 
-### Unsupervised image registration*
+### Image registration*
+[Unsupervised registration of CT image slices](tutorial/registration/readme.md)
 
-### Image synthesis using GANs*
-
-### Deep reinforcement learning*
+### Image synthesis*
+[Ultrasound image simulation](tutorial/synthesis/readme.md)

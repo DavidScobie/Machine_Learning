@@ -1,10 +1,10 @@
 
 # Learning PyTorch for Medical Imaging
 
-## PyTorch as a paralell computing tool
+## Official PyTorch documentation
 https://pytorch.org/
 
-## Example fron official pytorch tutorials
+## Examples in medical imaging applications
 
 Neural networks
 https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
