@@ -145,11 +145,11 @@ images_test = dataiter.next()
 preds_test = model(images_test)
 '''
 
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-freq_print = 1  # in epoch
-freq_test = 2  # in epoch
-for epoch in range(20):
+freq_print = 10  # in epoch
+freq_test = 100  # in epoch
+for epoch in range(500):
     for step, (images, labels) in enumerate(train_loader):
         if use_cuda:
             images, labels = images.cuda(), labels.cuda()
