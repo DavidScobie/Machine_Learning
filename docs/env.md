@@ -15,14 +15,15 @@ conda deactivate
 ```
 
 ### Optional - Install TensorFlow or PyTorch in `mphy0041` with GPU support
-For TensorFlow users, 
+>:Note: the following instructions are example installation, which depends on the available CUDA versions.
+For TensorFlow users, see [conda TensorFlow guide](https://docs.anaconda.com/anaconda/user-guide/tasks/tensorflow/), e.g.:
 ```bash
 conda install tensorflow-gpu -c anaconda 
 ```
 
-For PyTorch users,
+For PyTorch users, see [PyTorch install guide](https://pytorch.org/get-started/locally/):
 ```bash
-conda install pytorch cudatoolkit=11.0 -c pytorch
+conda install pytorch cudatoolkit=10.1 -c pytorch
 ```
 
 ### Cheat - Use TensorFlow and PyTorch on Google Colab

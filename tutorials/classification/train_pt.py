@@ -5,7 +5,7 @@ import random
 filename = './data/ultrasound_50frames.h5'
 
 use_cuda = torch.cuda.is_available()
-device = torch.device("cuda:0" if use_cuda else "cpu")
+device = torch.device("cuda:2" if use_cuda else "cpu")
 
 # define a vgg-16 net
 class VGGNet(torch.nn.Module):
@@ -50,6 +50,8 @@ class H5Dataset(torch.utils.data.Dataset):
 
 # training
 model = VGGNet(1,4)
+if use_cuda:
+    model.cuda()
 
 train_set = H5Dataset(filename)
 train_loader = torch.utils.data.DataLoader(
@@ -67,10 +69,9 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
 freq_print = 10
 for epoch in range(200):
-    for ii, data in enumerate(train_loader, 0):
-        
-        moving_loss = 0.0
-        frames, labels = data
+    for step, (frames, labels) in enumerate(train_loader):
+        if use_cuda:
+            images, labels = images.cuda(), labels.cuda()
 
         optimizer.zero_grad()
         outputs = model(frames)
@@ -79,9 +80,8 @@ for epoch in range(200):
         optimizer.step()
 
         # Compute and print loss
-        moving_loss += loss.item()
-        if ii % freq_print == (freq_print-1):    # print every 20 mini-batches
-            print('[Epoch %d, iter %05d] loss: %.3f' % (epoch, ii, moving_loss/freq_print))
+        if step % freq_print == (freq_print-1):    # print every 20 mini-batches
+            print('[Epoch %d, iter %05d] loss: %.3f' % (epoch, step, loss.item()))
             moving_loss = 0.0
 
 print('Training done.')
