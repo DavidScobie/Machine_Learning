@@ -30,9 +30,9 @@ conda create --name mphy0041 numpy scipy matplotlib h5py tensorflow pytorch
 conda activate mphy0041
 ```
 
-Then go to each individual tutorial and run the `data.py` script to download tutorial data, e.g.:
+Then go to each individual tutorial and run the `data.py` script to download tutorial data, after replacing `tutorial_subfolder_name`:
 ``` bash
-cd classificaion
+cd tutorial_subfolder_name  # e.g. `cd segmentation`
 python data.py
 ```
 
@@ -54,13 +54,13 @@ python visualise.py
 ```
 
 ### 2D Image clssification
-[Anatomy classification on ultrasound images](tutorials/classification/readme.md)
+[Anatomy classification on ultrasound images](tutorials/classification)
 
 ### 3D Image segmentation
-[Segmentation of organs on 3D MR images](tutorials/segmentation/readme.md)
+[Segmentation of organs on 3D MR images](tutorials/segmentation)
 
 ### Image registration*
-[Unsupervised registration of CT image slices](tutorials/registration/readme.md)
+[Unsupervised registration of CT image slices](tutorials/registration)
 
 ### Image synthesis*
-[Ultrasound image simulation](tutorials/synthesis/readme.md)
+[Ultrasound image simulation](tutorials/synthesis)
