@@ -48,7 +48,7 @@ or
 python train_tf2.py
 ```
 
-Example data and results can be visualised before or after training:
+It helps to visualise example data and (predicted) labels.
 ``` bash
 python visualise.py
 ```
