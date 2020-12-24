@@ -16,7 +16,7 @@ nFrm = 8
 num_subjects = h5_file['/num_subjects'][0][0]
 idx_subject = random.sample(range(num_subjects),nSbj)
 
-plt.figure()
+plt.figure(figsize=[19.2,10.8])
 for iSbj in range(nSbj):
     dataset = '/subject%06d_num_frames' % (idx_subject[iSbj])
     num_frames = h5_file[dataset][0][0]
@@ -31,4 +31,5 @@ for iSbj in range(nSbj):
         axs.set_title('S{}, F{}, C{}'.format(idx_subject[iSbj], idx_frame[iFrm], label))
         axs.imshow(frame, cmap='gray')
         axs.axis('off')
-plt.show()
+# plt.show()
+plt.savefig('visualise.pdf')

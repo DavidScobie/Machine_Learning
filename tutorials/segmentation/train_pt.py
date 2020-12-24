@@ -108,7 +108,7 @@ class NPyDataset(torch.utils.data.Dataset):
             label = self._load_npy("label_train%02d.npy" % idx)
             return image, label
         else:
-            return self._load_npy("image_test%02d.npy" % idx)
+            return self._load_npy("image_test%02d.npy" % idx), idx
 
     def _load_npy(self, filename):
         filename = os.path.join(self.folder_name, filename)
@@ -137,7 +137,7 @@ test_set = NPyDataset(folder_name, is_train=False)
 test_loader = torch.utils.data.DataLoader(
     test_set,
     batch_size=4,
-    shuffle=False,
+    shuffle=True,  # change to False for predefined test data
     num_workers=4)
 '''
 dataiter = iter(test_loader)
@@ -164,14 +164,15 @@ for epoch in range(500):
         if (step==0) and (epoch%freq_print==0):    # print every freq_print mini-batches
             print('[Epoch %d, step %d] loss: %.5f' % (epoch,step,loss.item()))
         
-        # test data during training (no validation labels available)
+        # --- testing during training (no validation labels available)
         if (step==0) and (epoch%freq_test==0):
-            for mb, images_test in enumerate(test_loader):
-                if use_cuda:
-                    images_test = images_test.cuda()
-                preds_test = model(images_test)
-                save_path = os.path.join(RESULT_PATH,'test_e{}s{}b{}.npy'.format(epoch,step,mb))
-                np.save(save_path, preds_test.detach().cpu().numpy().squeeze())
+            images_test, id_test = iter(test_loader).next()  # test one minibatch
+            if use_cuda:
+                images_test = images_test.cuda()
+            preds_test = model(images_test)
+            for idx, id in enumerate(id_test):
+                save_path = os.path.join(RESULT_PATH,'label_test{}_e{}s{}.npy'.format(id,epoch,step))
+                np.save(save_path, preds_test.detach()[idx,...].cpu().numpy().squeeze())
                 print('Test data saved: {}'.format(save_path))
 
 print('Training done.')

@@ -156,7 +156,7 @@ class DataReader:
         return self.load_npy_files(["label_train%02d.npy" % idx for idx in indices_mb])
     def load_npy_files(self, file_names):
         images = [np.float32(np.load(os.path.join(self.folder_name, fn))) for fn in file_names]
-        return np.expand_dims(np.stack(images, axis=0), axis=4)
+        return np.expand_dims(np.stack(images, axis=0), axis=4)[:, ::2, ::2, ::2, :]
 
 
 ### training
@@ -188,8 +188,8 @@ for step in range(total_iter):
     minibatch_idx = step % num_minibatch  # minibatch index
     indices_mb = indices_train[minibatch_idx*size_minibatch:(minibatch_idx+1)*size_minibatch]
     # halve image size so this can be reasonably tested, e.g. on a CPU
-    input_mb = DataFeeder.load_images_train(indices_mb)[:, ::2, ::2, ::2, :]
-    label_mb = DataFeeder.load_labels_train(indices_mb)[:, ::2, ::2, ::2, :]
+    input_mb = DataFeeder.load_images_train(indices_mb)
+    label_mb = DataFeeder.load_labels_train(indices_mb)
     # update the variables
     loss_train = train_step(residual_unet, var_list, optimizer, input_mb, label_mb)
 
@@ -197,13 +197,14 @@ for step in range(total_iter):
     if (step % 100) == 0:
         tf.print('Step', step, ': training-loss=', loss_train)
 
-    # --- simple tests during training ---
+    # --- testing during training (no validation labels available)
     if (step % 1000) == 0:
         indices_test = [random.randrange(30) for i in range(size_minibatch)]  # select size_minibatch test data
-        input_test = DataFeeder.load_images_test(indices_test)[:, ::2, ::2, ::2, :]
+        input_test = DataFeeder.load_images_test(indices_test)
         pred_test = residual_unet(input_test)
         # save the segmentation
         for idx in range(size_minibatch):
-            np.save(os.path.join(path_to_save, "label_test%02d_step%06d.npy" % (indices_test[idx], step)), pred_test[idx, ...])
-        tf.print('Test results saved.')
+            save_path = os.path.join(path_to_save, "label_test%02d_step%06d.npy" % (indices_test[idx], step))
+            np.save(save_path, pred_test[idx, ...])
+            tf.print('Test data saved: {}'.format(save_path))
 
