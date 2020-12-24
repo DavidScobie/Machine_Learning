@@ -204,7 +204,7 @@ for step in range(total_iter):
         pred_test = residual_unet(input_test)
         # save the segmentation
         for idx in range(size_minibatch):
-            save_path = os.path.join(path_to_save, "label_test%02d_step%06d.npy" % (indices_test[idx], step))
-            np.save(save_path, pred_test[idx, ...])
-            tf.print('Test data saved: {}'.format(save_path))
+            filepath_to_save = os.path.join(path_to_save, "label_test%02d_step%06d.npy" % (indices_test[idx], step))
+            np.save(filepath_to_save, tf.squeeze(pred_test[idx, ...]))
+            tf.print('Test data saved: {}'.format(filepath_to_save))
 

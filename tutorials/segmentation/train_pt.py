@@ -126,7 +126,7 @@ train_loader = torch.utils.data.DataLoader(
     batch_size=4,
     shuffle=True,
     num_workers=4)
-'''
+'''test
 dataiter = iter(train_loader)
 images, labels = dataiter.next()
 preds = model(images)
@@ -139,11 +139,6 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=4,
     shuffle=True,  # change to False for predefined test data
     num_workers=4)
-'''
-dataiter = iter(test_loader)
-images_test = dataiter.next()
-preds_test = model(images_test)
-'''
 
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
@@ -166,13 +161,13 @@ for epoch in range(500):
         
         # --- testing during training (no validation labels available)
         if (step==0) and (epoch%freq_test==0):
-            images_test, id_test = iter(test_loader).next()  # test one minibatch
+            images_test, id_test = iter(test_loader).next()  # test one mini-batch
             if use_cuda:
                 images_test = images_test.cuda()
             preds_test = model(images_test)
             for idx, id in enumerate(id_test):
-                save_path = os.path.join(RESULT_PATH,'label_test{}_e{}s{}.npy'.format(id,epoch,step))
-                np.save(save_path, preds_test.detach()[idx,...].cpu().numpy().squeeze())
-                print('Test data saved: {}'.format(save_path))
+                filepath_to_save = os.path.join(RESULT_PATH,'label_test{}_e{}s{}.npy'.format(id,epoch,step))
+                np.save(filepath_to_save, preds_test.detach()[idx,...].cpu().numpy().squeeze())
+                print('Test data saved: {}'.format(filepath_to_save))
 
 print('Training done.')
