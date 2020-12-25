@@ -144,7 +144,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
 freq_print = 10  # in epoch
 freq_test = 100  # in epoch
-for epoch in range(500):
+for epoch in range(2001):
     for step, (images, labels) in enumerate(train_loader):
         if use_cuda:
             images, labels = images.cuda(), labels.cuda()
@@ -158,7 +158,7 @@ for epoch in range(500):
         # Compute and print loss
         if (step==0) and (epoch%freq_print==0):    # print every freq_print mini-batches
             print('[Epoch %d, step %d] loss: %.5f' % (epoch,step,loss.item()))
-        
+
         # --- testing during training (no validation labels available)
         if (step==0) and (epoch%freq_test==0):
             images_test, id_test = iter(test_loader).next()  # test one mini-batch
