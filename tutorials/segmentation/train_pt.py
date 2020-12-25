@@ -9,8 +9,9 @@ import numpy as np
 folder_name = './data/datasets-promise12'
 RESULT_PATH = './result'
 
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 use_cuda = torch.cuda.is_available()
-device = torch.device("cuda:1" if use_cuda else "cpu")
+# device = torch.device("cuda:1" if use_cuda else "cpu")
 
 class UNet(torch.nn.Module):
 
