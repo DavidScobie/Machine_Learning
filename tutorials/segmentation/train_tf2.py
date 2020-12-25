@@ -207,7 +207,7 @@ for step in range(total_iter):
         input_test = DataFeeder.load_images_test(indices_test)
         pred_test = residual_unet(input_test)
         for idx in range(size_minibatch):
-            filepath_to_save = os.path.join(path_to_save, "label_test%d_step%06d-tf.npy" % (indices_test[idx], step1))
+            filepath_to_save = os.path.join(path_to_save, "label_test%03d_step%06d-tf.npy" % (indices_test[idx], step1))
             np.save(filepath_to_save, tf.squeeze(pred_test[idx, ...]))
             tf.print('Test data saved: {}'.format(filepath_to_save))
 
