@@ -142,8 +142,8 @@ test_loader = torch.utils.data.DataLoader(
 
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-freq_print = 10  # in epoch
-freq_test = 20  # in epoch
+freq_print = 100  # in epoch
+freq_test = 2000  # in epoch
 total_steps = int(2e5)
 step = 0
 while step < total_steps:

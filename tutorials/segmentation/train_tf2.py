@@ -170,8 +170,8 @@ def train_step(model, weights, optimizer, x, y):
     return loss
 learning_rate = 1e-4
 total_iter = int(2e5)
-freq_print = 10  # in epoch
-freq_test = 20  # in epoch
+freq_print = 100  # in epoch
+freq_test = 2000  # in epoch
 
 n = 50  # 50 training image-label pairs
 size_minibatch = 4
@@ -197,17 +197,17 @@ for step in range(total_iter):
     loss_train = train_step(residual_unet, var_list, optimizer, input_mb, label_mb)
 
     # print training information
-    step_d = step+1  # for display
-    if (step_d % freq_print) == 0:
-        tf.print('Step', step_d, ': training-loss=', loss_train)
+    step1 = step+1  # for display and count
+    if (step1 % freq_print) == 0:
+        tf.print('Step', step1, ': training-loss=', loss_train)
 
     # --- testing during training (no validation labels available)
-    if (step_d % freq_test) == 0:
+    if (step1 % freq_test) == 0:
         indices_test = [random.randrange(30) for i in range(size_minibatch)]  # select size_minibatch test data
         input_test = DataFeeder.load_images_test(indices_test)
         pred_test = residual_unet(input_test)
         for idx in range(size_minibatch):
-            filepath_to_save = os.path.join(path_to_save, "label_test%d_step%d-tf.npy" % (indices_test[idx], step_d))
+            filepath_to_save = os.path.join(path_to_save, "label_test%d_step%d-tf.npy" % (indices_test[idx], step1))
             np.save(filepath_to_save, tf.squeeze(pred_test[idx, ...]))
             tf.print('Test data saved: {}'.format(filepath_to_save))
 
