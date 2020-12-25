@@ -168,8 +168,11 @@ def train_step(model, weights, optimizer, x, y):
     gradients = tape.gradient(loss, weights)
     optimizer.apply_gradients(zip(gradients, weights))
     return loss
-learning_rate = 1e-5
-total_iter = int(1e6)
+learning_rate = 1e-4
+total_iter = int(2e5)
+freq_print = 10  # in epoch
+freq_test = 20  # in epoch
+
 n = 50  # 50 training image-label pairs
 size_minibatch = 4
 
@@ -194,17 +197,17 @@ for step in range(total_iter):
     loss_train = train_step(residual_unet, var_list, optimizer, input_mb, label_mb)
 
     # print training information
-    if (step % 100) == 0:
-        tf.print('Step', step, ': training-loss=', loss_train)
+    step_d = step+1  # for display
+    if (step_d % freq_print) == 0:
+        tf.print('Step', step_d, ': training-loss=', loss_train)
 
     # --- testing during training (no validation labels available)
-    if (step % 1000) == 0:
+    if (step_d % freq_test) == 0:
         indices_test = [random.randrange(30) for i in range(size_minibatch)]  # select size_minibatch test data
         input_test = DataFeeder.load_images_test(indices_test)
         pred_test = residual_unet(input_test)
-        # save the segmentation
         for idx in range(size_minibatch):
-            filepath_to_save = os.path.join(path_to_save, "label_test%02d_step%06d.npy" % (indices_test[idx], step))
+            filepath_to_save = os.path.join(path_to_save, "label_test%d_step%d-tf.npy" % (indices_test[idx], step_d))
             np.save(filepath_to_save, tf.squeeze(pred_test[idx, ...]))
             tf.print('Test data saved: {}'.format(filepath_to_save))
 

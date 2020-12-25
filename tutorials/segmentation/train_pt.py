@@ -10,7 +10,7 @@ folder_name = './data/datasets-promise12'
 RESULT_PATH = './result'
 
 use_cuda = torch.cuda.is_available()
-device = torch.device("cuda:0" if use_cuda else "cpu")
+device = torch.device("cuda:1" if use_cuda else "cpu")
 
 class UNet(torch.nn.Module):
 
@@ -140,12 +140,15 @@ test_loader = torch.utils.data.DataLoader(
     shuffle=True,  # change to False for predefined test data
     num_workers=4)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
 freq_print = 10  # in epoch
-freq_test = 100  # in epoch
-for epoch in range(2001):
-    for step, (images, labels) in enumerate(train_loader):
+freq_test = 20  # in epoch
+total_steps = int(2e5)
+step = 0
+while step < total_steps:
+    for ii, (images, labels) in enumerate(train_loader):
+        step += 1
         if use_cuda:
             images, labels = images.cuda(), labels.cuda()
 
@@ -156,17 +159,17 @@ for epoch in range(2001):
         optimizer.step()
 
         # Compute and print loss
-        if (step==0) and (epoch%freq_print==0):    # print every freq_print mini-batches
-            print('[Epoch %d, step %d] loss: %.5f' % (epoch,step,loss.item()))
+        if (step % freq_print) == 0:    # print every freq_print mini-batches
+            print('[Step %d] loss: %.5f' % (step,loss.item()))
 
         # --- testing during training (no validation labels available)
-        if (step==0) and (epoch%freq_test==0):
+        if (step % freq_test) == 0:  
             images_test, id_test = iter(test_loader).next()  # test one mini-batch
             if use_cuda:
                 images_test = images_test.cuda()
             preds_test = model(images_test)
             for idx, id in enumerate(id_test):
-                filepath_to_save = os.path.join(RESULT_PATH,'label_test{}_e{}s{}.npy'.format(id,epoch,step))
+                filepath_to_save = os.path.join(RESULT_PATH,'label_test{}_step{}-pt.npy'.format(id,step))
                 np.save(filepath_to_save, preds_test.detach()[idx,...].cpu().numpy().squeeze())
                 print('Test data saved: {}'.format(filepath_to_save))
 
