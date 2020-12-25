@@ -161,7 +161,7 @@ while step < total_steps:
 
         # Compute and print loss
         if (step % freq_print) == 0:    # print every freq_print mini-batches
-            print('[Step %d] loss: %.5f' % (step,loss.item()))
+            print('Step %d loss: %.5f' % (step,loss.item()))
 
         # --- testing during training (no validation labels available)
         if (step % freq_test) == 0:  
@@ -169,8 +169,8 @@ while step < total_steps:
             if use_cuda:
                 images_test = images_test.cuda()
             preds_test = model(images_test)
-            for idx, id in enumerate(id_test):
-                filepath_to_save = os.path.join(RESULT_PATH,'label_test{}_step{}-pt.npy'.format(id,step))
+            for idx, index in enumerate(id_test):
+                filepath_to_save = os.path.join(RESULT_PATH,"label_test%d_step%06d-pt.npy" % (index,step))
                 np.save(filepath_to_save, preds_test.detach()[idx,...].cpu().numpy().squeeze())
                 print('Test data saved: {}'.format(filepath_to_save))
 
