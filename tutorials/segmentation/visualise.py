@@ -4,19 +4,26 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-path_to_data = '../../../promise12' 
+path_to_data = './data/datasets-promise12'
 path_to_save = './result' 
 
-# specify these to plot the results w.r.t. the images
-step = 56000
-idx_case = 24
-idx_slice = 6
-
-image = np.load(os.path.join(path_to_data, "image_test%02d.npy" % idx_case))[::2, ::2, ::2]
-label = np.load(os.path.join(path_to_save, "label_test%02d_step%06d.npy" % (idx_case, step)))[..., 0]
-print(label.shape)
-plt.figure()
-plt.imshow(image[idx_slice,:,:], cmap='gray')
-plt.figure()
-plt.imshow(label[idx_slice,:,:], cmap='gray')
-plt.show()
+# to plot example slices of segmentation results
+for ext in ["-tf.npy","-pt.npy"]:  # find all npy files
+    files = [f for f in os.listdir(path_to_save) if f.endswith(ext)]  
+    fmax = []  # find the maximum step
+    for test_id in set([f.split('_')[1] for f in files]):
+        fmax += [max([f for f in files if f.split('_')[1]==test_id])]
+    
+    for f in fmax:
+        label = np.load(os.path.join(path_to_save, f))
+        image = np.load(os.path.join(path_to_data, "image_"+f.split('_')[1]+".npy"))[::2, ::2, ::2]  # change this per loader
+        slices = range(0,label.shape[0],3)  # we only display a subset of data
+        montage = np.concatenate([np.concatenate([image[i,...] for i in slices],axis=0),
+                                  np.concatenate([label[i,...]*np.max(image) for i in slices],axis=0)], axis=1)
+        plt.figure()
+        plt.imshow(montage, cmap='gray')
+        plt.title(f.split('.')[0])
+        # plt.show()
+        plt.savefig(os.path.join(path_to_save, f.split('.')[0]+'.jpg'))
+        plt.close()
+print('Plots saved: {}'.format(path_to_save))

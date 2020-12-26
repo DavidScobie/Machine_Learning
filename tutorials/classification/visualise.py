@@ -32,4 +32,4 @@ for iSbj in range(nSbj):
         axs.imshow(frame, cmap='gray')
         axs.axis('off')
 # plt.show()
-plt.savefig('visualise.pdf')
+plt.savefig('visualise.jpg')
