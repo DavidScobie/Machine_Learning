@@ -170,7 +170,7 @@ while step < total_steps:
                 images_test = images_test.cuda()
             preds_test = model(images_test)
             for idx, index in enumerate(id_test):
-                filepath_to_save = os.path.join(RESULT_PATH,"label_test%03d_step%06d-pt.npy" % (index,step))
+                filepath_to_save = os.path.join(RESULT_PATH,"label_test%02d_step%06d-pt.npy" % (index,step))
                 np.save(filepath_to_save, preds_test.detach()[idx,...].cpu().numpy().squeeze())
                 print('Test data saved: {}'.format(filepath_to_save))
 
