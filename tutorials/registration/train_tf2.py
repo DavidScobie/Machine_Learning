@@ -1,4 +1,4 @@
-# (Model) this uses TensorFlow
+# (Model) this uses TensorFlow-2
 
 import random
 import time
@@ -21,9 +21,6 @@ num_data = images.shape[0]
 
 # 1 - settings
 weight_regulariser = 1e-1
-parsed_input = sys.argv  # get idx at runtime
-if len(parsed_input) == 2:
-    weight_regulariser = float(parsed_input[1])
 
 minibatch_size = 8
 learning_rate = 1e-3

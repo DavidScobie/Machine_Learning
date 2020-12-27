@@ -80,7 +80,7 @@ def warp_grid(grid, transform):
     return tf.reshape(grid_warped[...,:2], [batch_size,height,width,2])
 
 
-def resample_linear(grid_data, sample_grids):
+def bilinear_resampler(grid_data, sample_grids):
     '''
     grid_data: [batch, height, width]
     sample_grids: [batch, height, width, 2]    
@@ -153,4 +153,4 @@ class RegNet2D:
     def warp_image(self, input_=None):
         if input_ is None:
             input_ = self.image_moving
-        return tf.contrib.resampler.resampler(input_, self.grid_warped)
+        return bilinear_resampler(input_, self.grid_warped)
