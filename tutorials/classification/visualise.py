@@ -1,6 +1,7 @@
+# This is part of the tutorial materials in the UCL Module MPHY0041: Machine Learning in Medical Imaging
 # run data.py before visualise the image data
-
 import random
+
 import h5py
 from matplotlib import pyplot as plt
 
@@ -8,11 +9,11 @@ from matplotlib import pyplot as plt
 filename = './data/ultrasound_50frames.h5'
 h5_file = h5py.File(filename, 'r')
 
-# visual inspect nFrm frames from nSbj subjects
+# inspect nFrm frames from nSbj subjects
 nSbj = 6
 nFrm = 8
 
-# generate random subjects
+# sample random subjects
 num_subjects = h5_file['/num_subjects'][0][0]
 idx_subject = random.sample(range(num_subjects),nSbj)
 
@@ -26,7 +27,7 @@ for iSbj in range(nSbj):
         frame = h5_file[dataset][()]
         dataset = '/subject%06d_label%08d' % (idx_subject[iSbj], idx_frame[iFrm])
         label = h5_file[dataset][0][0]
-
+        # plot in one of the subplots
         axs = plt.subplot(nSbj, nFrm, iSbj*nFrm+iFrm+1)
         axs.set_title('S{}, F{}, C{}'.format(idx_subject[iSbj], idx_frame[iFrm], label))
         axs.imshow(frame, cmap='gray')

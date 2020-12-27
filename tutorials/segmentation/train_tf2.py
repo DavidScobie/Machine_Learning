@@ -1,18 +1,17 @@
+# This is part of the tutorial materials in the UCL Module MPHY0041: Machine Learning in Medical Imaging
 # This is a tutorial using TensorFlow 2.x, in particular, low-level TF APIs without high-level Keras
+import os
+import random
 
 import tensorflow as tf
 import numpy as np
-import random
-import os
 
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
-
-
 path_to_data = './data/datasets-promise12'
 path_to_save = './result' 
 
-### Define a few functions for network layers
+## Define functions for network layers
 def conv3d(input, filters, downsample=False, activation=True, batch_norm=False):
     if downsample: strides = [1,2,2,2,1]
     else: strides = [1,1,1,1,1]
@@ -48,9 +47,8 @@ def add_variable(var_shape, var_list, var_name=None, initialiser=None):
         var_list.append(tf.Variable(initialiser(var_shape), name=var_name, trainable=True))
     return var_list
 
-### Define a model (the 3D U-Net) with residual layers
-### ref: https://arxiv.org/abs/1512.03385  & https://arxiv.org/abs/1505.04597
-## define all the trinable weights
+## Define a model (a 3D U-Net variant) with residual layers with trinable weights
+# ref: https://arxiv.org/abs/1512.03385  & https://arxiv.org/abs/1505.04597
 num_channels = 32
 nc = [num_channels*(2**i) for i in range(4)]
 var_list=[]
@@ -134,17 +132,14 @@ def residual_unet(input):
     layer = tf.sigmoid(conv3d(layer, var_list[25], activation=False))
     return layer
 
-
-def loss_crossentropy(pred, target):
-    return tf.losses.BinaryCrossentropy(pred=pred, target=target)
-
+## loss function
 def loss_dice(pred, target, eps=1e-6):
     dice_numerator = 2 * tf.reduce_sum(pred*target, axis=[1,2,3,4])
     dice_denominator = eps + tf.reduce_sum(pred, axis=[1,2,3,4]) + tf.reduce_sum(target, axis=[1,2,3,4])
     return  1 - tf.reduce_mean(dice_numerator/dice_denominator)
 
 
-### a simple npy image reading class
+## npy data loader class
 class DataReader:
     def __init__(self, folder_name):
         self.folder_name = folder_name
@@ -159,7 +154,7 @@ class DataReader:
         return np.expand_dims(np.stack(images, axis=0), axis=4)[:, ::2, ::2, ::2, :]
 
 
-### training
+## training
 @tf.function
 def train_step(model, weights, optimizer, x, y):
     with tf.GradientTape() as tape:
@@ -168,17 +163,17 @@ def train_step(model, weights, optimizer, x, y):
     gradients = tape.gradient(loss, weights)
     optimizer.apply_gradients(zip(gradients, weights))
     return loss
+
+# optimisation configuration
 learning_rate = 1e-4
 total_iter = int(2e5)
 freq_print = 100  # in epoch
 freq_test = 2000  # in epoch
-
 n = 50  # 50 training image-label pairs
 size_minibatch = 4
 
 num_minibatch = int(n/size_minibatch)  # how many minibatches in each epoch
 indices_train = [i for i in range(n)]
-
 DataFeeder = DataReader(path_to_data)
 optimizer = tf.optimizers.Adam(learning_rate)
 for step in range(total_iter):
@@ -211,3 +206,4 @@ for step in range(total_iter):
             np.save(filepath_to_save, tf.squeeze(pred_test[idx, ...]))
             tf.print('Test data saved: {}'.format(filepath_to_save))
 
+print('Training done.')

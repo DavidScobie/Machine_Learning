@@ -1,18 +1,16 @@
-# this is a demo script for UNet for 3d images
+# This is part of the tutorial materials in the UCL Module MPHY0041: Machine Learning in Medical Imaging
 import os
 
 import torch
 import numpy as np
 
 
-
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+use_cuda = torch.cuda.is_available()
 folder_name = './data/datasets-promise12'
 RESULT_PATH = './result'
 
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
-use_cuda = torch.cuda.is_available()
-# device = torch.device("cuda:1" if use_cuda else "cpu")
-
+## network class
 class UNet(torch.nn.Module):
 
     def __init__(self, ch_in=1, ch_out=1, init_n_feat=32):
@@ -74,6 +72,7 @@ class UNet(torch.nn.Module):
             torch.nn.ReLU(inplace=True))
 
 
+## loss function
 def loss_dice(y_pred, y_true, eps=1e-6):
     '''
     y_pred, y_true -> [N, C=1, D, H, W]
@@ -83,18 +82,7 @@ def loss_dice(y_pred, y_true, eps=1e-6):
     return torch.mean(1. - (numerator / denominator))
 
 
-def binary_dice(y_true, y_pred):
-    y_true = y_true >= 0.5
-    y_pred = y_pred >= 0.5
-    numerator = torch.sum(y_true * y_pred) * 2
-    denominator = torch.sum(y_true) + torch.sum(y_pred)
-    if numerator == 0 or denominator == 0:
-        return 0.0
-    else:
-        return numerator / denominator
-
-
-# now define a data loader
+## data loader
 class NPyDataset(torch.utils.data.Dataset):
     def __init__(self, folder_name, is_train=True):
         self.folder_name = folder_name
@@ -116,11 +104,12 @@ class NPyDataset(torch.utils.data.Dataset):
         return torch.unsqueeze(torch.tensor(np.float32(np.load(filename)[::2,::2,::2])),dim=0)
 
 
-# training
-model = UNet(1,1)
+## training
+model = UNet(1,1)  # input 1-channel 3d volume and output 1-channel segmentation (a probability map)
 if use_cuda:
     model.cuda()
 
+# training data loader
 train_set = NPyDataset(folder_name)
 train_loader = torch.utils.data.DataLoader(
     train_set,
@@ -133,7 +122,7 @@ images, labels = dataiter.next()
 preds = model(images)
 '''
 
-# test/validation data
+# test/validation data loader
 test_set = NPyDataset(folder_name, is_train=False)
 test_loader = torch.utils.data.DataLoader(
     test_set,
@@ -141,12 +130,13 @@ test_loader = torch.utils.data.DataLoader(
     shuffle=True,  # change to False for predefined test data
     num_workers=4)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-freq_print = 100  # in epoch
-freq_test = 2000  # in epoch
+# optimisation loop
+freq_print = 100  # in steps
+freq_test = 2000  # in steps
 total_steps = int(2e5)
 step = 0
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 while step < total_steps:
     for ii, (images, labels) in enumerate(train_loader):
         step += 1

@@ -1,8 +1,10 @@
+# This is part of the tutorial materials in the UCL Module MPHY0041: Machine Learning in Medical Imaging
 # run train.py before visualise the results
+import os
 
 import numpy as np
-import os
 import matplotlib.pyplot as plt
+
 
 path_to_data = './data/datasets-promise12'
 path_to_save = './result' 

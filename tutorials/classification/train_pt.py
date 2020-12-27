@@ -1,13 +1,16 @@
-import torch
-import h5py
+# This is part of the tutorial materials in the UCL Module MPHY0041: Machine Learning in Medical Imaging
+import os
 import random
 
+import torch
+import h5py
+
+
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+use_cuda = torch.cuda.is_available()
 filename = './data/ultrasound_50frames.h5'
 
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda:2" if use_cuda else "cpu")
-
-# define a vgg-16 net
+## build a vgg-16 network class
 class VGGNet(torch.nn.Module):
     def __init__(self, n_in, n_out, n_config=[64, -64, 128, -128, 256, 256, -256, 512, 512, 512]):  # pooling when negative
         super(VGGNet, self).__init__()
@@ -31,7 +34,7 @@ class VGGNet(torch.nn.Module):
         return block
 
 
-# now define a data loader
+## data loader
 class H5Dataset(torch.utils.data.Dataset):
     def __init__(self, file_path):
         self.h5_file = h5py.File(file_path, 'r')
@@ -48,7 +51,7 @@ class H5Dataset(torch.utils.data.Dataset):
         return (frame, label)
 
 
-# training
+## training
 model = VGGNet(1,4)
 if use_cuda:
     model.cuda()
