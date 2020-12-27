@@ -15,9 +15,8 @@ r = requests.get(url,allow_redirects=True)
 filename = os.path.join(DATA_PATH,'ultrasound_50frames.h5')
 _ = open(filename,'wb').write(r.content)
 print('Done.')
+print('Image and label data downloaded: %s' % filename)
 
 if not os.path.exists(RESULT_PATH):
     os.makedirs(RESULT_PATH)
-
-print('Image and label data downloaded: %s' % filename)
-print('Result directory created: %s' % os.path.abspath(RESULT_PATH))
+    print('Result directory created: %s' % os.path.abspath(RESULT_PATH))
