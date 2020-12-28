@@ -31,7 +31,7 @@ def downsample_maxpool(input, filters):
     return tf.nn.max_pool3d(y, ksize=[1,3,3,3,1], padding='SAME', strides=[1,2,2,2,1])
 
 def deconv3d(input, filters, out_shape, batch_norm=False):
-    y = tf.nn.conv3d_transpose(input, filters, output_shape=out_shape, strides=[1,2,2,2,1], padding='SAME') 
+    y = tf.nn.conv3d_transpose(input, filters, output_shape=out_shape, strides=[1,2,2,2,1], padding='SAME')
     if batch_norm: y = batch_norm(y)
     return tf.nn.relu(y)  # where bn can be added
 

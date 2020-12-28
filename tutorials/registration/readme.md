@@ -1,14 +1,14 @@
 This tutorial implements unsupervised image registration networks for 2D head-and-neck CT images  
 
 
-## TensorFlow 2  
+## TensorFlow 2 examples
 The tutorial uses code adapted from [Tensorflow Examples](https://github.com/tensorflow/examples), please install first in the `mphy0041` conda environment:
 ```
 pip install -q git+https://github.com/tensorflow/examples.git
 ```
 
-## other materials
-A series tutorials for image registration can be found: https://github.com/learn2reg/tutorials2019
-For 3D examples of medical image registration using deep learning, see DeepReg package
+## Other materials
+A series tutorials for image registration can be found in the [Learn2Reg tutorial](https://github.com/learn2reg/tutorials2019).
+For 3D examples of medical image registration using deep learning, see the [DeepReg](http://deepreg.net) package at [GitHub](https://github.com/DeepRegNet/DeepReg). 
 
 The local folder [tf1x](./tf1x) contains a fullly functional 2d version using TensorFlow 1
