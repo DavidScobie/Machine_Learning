@@ -1,7 +1,7 @@
 # *** This code is with an Apache 2.0 license, University College London ***
 
 import tensorflow as tf
-
+from tensorflow_examples.models.pix2pix import pix2pix
 
 ### network and layers
 def var_conv_kernel(ch_in, ch_out, name='W', initialiser=None):

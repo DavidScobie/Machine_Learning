@@ -1,7 +1,7 @@
 # (Model) This can be implemented in MATLAB
 
 import numpy as np
-from scipy.ndimage import morphology
+# from scipy.ndimage import morphology
 
 
 def compute_dice_batch(a, b):
@@ -28,6 +28,7 @@ def hausdorff_distance(a, b, percentile=95, sampling=1):
     return np.percentile(sds, percentile)
 
 
+'''
 def extract_surface(a, connectivity=1):
     a = np.atleast_1d(a.astype(np.bool))
 
@@ -40,3 +41,4 @@ def extract_surface(a, connectivity=1):
         conn = morphology.generate_binary_structure(a.ndim, connectivity)
 
     return np.bitwise_xor(a, morphology.binary_erosion(a, conn))
+'''

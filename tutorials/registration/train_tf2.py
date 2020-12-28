@@ -1,5 +1,4 @@
 # (Model) this uses TensorFlow-2
-
 import random
 import time
 import sys
@@ -7,34 +6,46 @@ import os
 
 import tensorflow as tf
 import numpy as np
+import matplotlib.image as mpimg
 
-import networks_tf2 as network
-import losses_tf2 as loss
+import tf_utils as utils
 
 
-# 0 - read all the data
-data_dir = '../data/'
-images = np.load(data_dir+'images_train.npy')
+## read all the data
+PATH_TO_TRAIN = 'data/datasets-hn2dct/train'
+PATH_TO_RESULT = 'result'
+
+images = np.stack([mpimg.imread(os.path.join(PATH_TO_TRAIN, f)) for f in os.listdir(PATH_TO_TRAIN) if f.endswith('.png')],axis=0)  # stack at dim=0 consistent with tf
 image_size = [images.shape[1], images.shape[2]]
 num_data = images.shape[0]
 
 
-# 1 - settings
+## settings
 weight_regulariser = 1e-1
-
 minibatch_size = 8
 learning_rate = 1e-3
-total_iterations = int(50000+1)
+total_iterations = int(1e5)
 freq_info_print = 200
 freq_model_save = 5000
 
-model_dir_save = data_dir + 'arg_%s/' % weight_regulariser
-if not os.path.exists(model_dir_save):
-        os.makedirs(model_dir_save)
-model_file_save = model_dir_save + 'model_saved'
+
+## network
+reg_net = utils.RegNet2D(minibatch_size=minibatch_size, image_moving=input_moving_image, image_fixed=input_fixed_image)
 
 
-# 2 - graph
+## train step
+@tf.function
+def train_step(model, weights, optimizer, mov_image, fix_image):
+    with tf.GradientTape() as tape:
+            ddf = model(mov_image, fix_image)
+            pre_image = model.warp_image(mov_image)
+            loss_similarity = utils.sum_square_difference(fix_image, pre_image)
+            loss_regularise = utils.bending_energy(ddf)
+            loss = loss_similarity + loss_regularise*weight_regulariser
+        gradients = tape.gradient(loss, weights)
+        optimizer.apply_gradients(zip(gradients, weights))
+        return loss
+
 ph_moving_image = tf.placeholder(tf.float32, [minibatch_size]+image_size)
 ph_fixed_image = tf.placeholder(tf.float32, [minibatch_size]+image_size)
 input_moving_image = tf.expand_dims(ph_moving_image, axis=3)  # data augmentation here

@@ -7,7 +7,7 @@
 ## Development environments
 
 ### Python and conda environment
-The tutorials require a few dependencies, numpy, scipy, matplotlib, in addition to one of the two deep learning frameworks. Individual tutorials may also require other libraries which will be specified in the readme.md in individual tutorial folders (see links below). Conda is recommended to set up the Python development environment with required dependencies. 
+The tutorials require a few dependencies, numpy, matplotlib, in addition to one of the two deep learning frameworks. Individual tutorials may also require other libraries which will be specified in the readme.md in individual tutorial folders (see links below). Conda is recommended to set up the Python development environment with required dependencies. 
 
 There is no requirement, in tutorials or assessed coursework, for what the development environment that needs to be used. However, technical support in this module is available for the setups detailed in [Supported Development Environment](docs/env.md). 
 
@@ -25,7 +25,7 @@ To run the tutorial examples, follow the instruction below.
 
 First, set up the environment:
 ``` bash
-conda create --name mphy0041 numpy scipy matplotlib h5py tensorflow pytorch
+conda create --name mphy0041 numpy matplotlib h5py tensorflow pytorch
 conda activate mphy0041
 ```
 

@@ -3,7 +3,7 @@
 import tensorflow as tf
 import networks
 import numpy as np
-from scipy.io import savemat
+# from scipy.io import savemat
 
 
 # 0 - read all the data
@@ -63,6 +63,7 @@ np.save(model_dir+'warped_images.npy', warped_images)
 np.save(model_dir+'warped_labels0.npy', warped_labels0)
 np.save(model_dir+'warped_labels1.npy', warped_labels1)
 
+'''
 savemat(model_dir+'reg',
         {'indices_moving': indices_moving,
          'indices_fixed': indices_fixed,
@@ -71,3 +72,4 @@ savemat(model_dir+'reg',
          'warped_images': warped_images,
          'warped_labels0': warped_labels0,
          'warped_labels1': warped_labels1})
+'''
