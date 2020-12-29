@@ -24,11 +24,16 @@ num_data = images.shape[0]
 test_images = np.stack([mpimg.imread(os.path.join(PATH_TO_TEST, f)) for f in os.listdir(PATH_TO_TEST) if (f.find('_')==-1 and f.endswith('.png'))],axis=0) 
 test_images = np.pad(test_images, [(0,0),(0,0),(0,1)])  # padding for an easier image size
 
+# image-wise normalisation 
+n = lambda im: (im-np.min(im,axis=(1,2),keepdims=True))/(np.max(im,axis=(1,2),keepdims=True)-np.min(im,axis=(1,2),keepdims=True))  
+images, test_images = n(images), n(test_images)
+
+
 ## settings
-weight_regulariser = 0.1
+weight_regulariser = 0.01
 minibatch_size = 8
-learning_rate = 1e-3
-total_iterations = int(1e5)
+learning_rate = 1e-4
+total_iterations = int(3e5+1)
 freq_info_print = 500
 freq_test_save = 5000
 
@@ -53,6 +58,7 @@ def train_step(mov_images, fix_images):
     return loss, loss_similarity, loss_regularise
 
 ## test
+@tf.function
 def test_step(mov_images, fix_images):
     inputs = tf.stack([mov_images,fix_images],axis=3)
     ddfs = reg_net(inputs, training=False)
@@ -77,7 +83,9 @@ for step in range(total_iterations):
     indices_moving = train_indices[minibatch_idx*minibatch_size:(minibatch_idx+1)*minibatch_size]
     indices_fixed = train_indices[::-1][minibatch_idx*minibatch_size:(minibatch_idx+1)*minibatch_size]
 
-    loss_train, loss_sim_train, loss_reg_train = train_step(images[indices_moving,...],images[indices_fixed,...])
+    loss_train, loss_sim_train, loss_reg_train = train_step(
+        tf.convert_to_tensor(images[indices_moving,...]),
+        tf.convert_to_tensor(images[indices_fixed,...]))
 
     if step in range(0, total_iterations, freq_info_print):
         print('Step %d: Loss=%f (similarity=%f, regulariser=%f)' %
@@ -85,7 +93,9 @@ for step in range(total_iterations):
         print('  Moving-fixed image pair indices: %s - %s' % (indices_moving, indices_fixed))
     
     if step in range(0, total_iterations, freq_test_save):
-        loss_test, loss_sim_test, loss_reg_test, pre_images_test = test_step(test_images[test_indices[0],...],test_images[test_indices[1],...])
+        loss_test, loss_sim_test, loss_reg_test, pre_images_test = test_step(
+            tf.convert_to_tensor(test_images[test_indices[0],...]),
+            tf.convert_to_tensor(test_images[test_indices[1],...]))
         print('*** Test *** Step %d: Loss=%f (similarity=%f, regulariser=%f)' %
               (step, loss_test, loss_sim_test, loss_reg_test))
         filepath_to_save = os.path.join(PATH_TO_RESULT, "test_step%06d-tf.npy" % step)
