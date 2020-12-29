@@ -6,12 +6,11 @@ import numpy as np
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 
+from np_utils import get_image_arrays
 
-PATH_TO_TEST = 'data/datasets-hn2dct/test'
+
 PATH_TO_RESULT = 'result'
-test_indices = [[0,0,1,1,2,2],[1,2,0,2,0,1]]
-test_images = np.stack([mpimg.imread(os.path.join(PATH_TO_TEST, f)) for f in os.listdir(PATH_TO_TEST) if (f.find('_')==-1 and f.endswith('.png'))],axis=0) 
-test_images = np.pad(test_images, [(0,0),(0,0),(0,1)])  # padding for an easier image size
+_, test_images, test_indices = get_image_arrays()
 
 # to plot example slices of segmentation results
 for ext in ["-tf.npy","-pt.npy"]:  # find all npy files

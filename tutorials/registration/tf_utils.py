@@ -42,18 +42,17 @@ class UNet(tf.keras.Model):
         return tf.keras.Model(inputs=inputs, outputs=self.call(inputs))
 
 
-
 ### transformation utility functions
 def get_reference_grid(grid_size):
     # grid_size: [batch_size, height, width]
     grid = tf.cast(tf.stack(tf.meshgrid(
-                        tf.range(grid_size[1]),
                         tf.range(grid_size[2]),
-                        indexing='ij'), axis=2), dtype=tf.float32)
+                        tf.range(grid_size[1])
+                        ), axis=2), dtype=tf.float32)
     return tf.tile(tf.expand_dims(grid, axis=0), [grid_size[0],1,1,1])
 
 
-def warp_grid(grid, transform):
+def warp_grids(grid, transform):
     # grid: [batch, height, width, 2]
     # transform: [batch, 3, 3]
     batch_size, height, width = grid.shape[0:3]
@@ -109,12 +108,12 @@ def random_image_transform(images):
     # images: [batch_size, height, width]
     reference_grid = get_reference_grid(images.shape[0:3])
     random_transform = random_transform_generator(images.shape[0], corner_scale=0.1)
-    sample_grids = warp_grid(reference_grid, random_transform)
+    sample_grids = warp_grids(reference_grid, random_transform)
     return bilinear_resampler(images, sample_grids)
 '''
 
 ### loss functions
-def sum_square_difference(i1, i2):
+def square_difference(i1, i2):
     return tf.reduce_mean(tf.square(i1 - i2), axis=[1, 2])  # use mean for normalised regulariser weighting
 
 
@@ -139,7 +138,7 @@ def gradient_norm(displacement, flag_l1=False):
         norms = dtdx**2 + dtdy**2
     return tf.reduce_mean(norms, [1, 2, 3])
 
-
+'''
 def bending_energy(displacement):
     dtdx = gradient_txy(displacement, gradient_dx)
     dtdy = gradient_txy(displacement, gradient_dy)
@@ -148,7 +147,6 @@ def bending_energy(displacement):
     dtdxy = gradient_txy(dtdx, gradient_dy)
     return tf.reduce_mean(dtdxx**2 + dtdyy**2 + 2*dtdxy**2, [1, 2, 3])
 
-'''
 
 def normalised_cross_correlation(ts, ps, eps=0.0):
     dp = ps - tf.reduce_mean(ps, axis=[1, 2, 3])

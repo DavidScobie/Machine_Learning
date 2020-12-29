@@ -20,7 +20,7 @@ num_data = images.shape[0]
 
 
 ## settings
-weight_regulariser = 0.01
+weight_regulariser = 0.001
 minibatch_size = 8
 learning_rate = 1e-4
 total_iterations = int(3e5+1)
@@ -40,8 +40,8 @@ def train_step(mov_images, fix_images):
         inputs = tf.stack([mov_images,fix_images],axis=3)
         ddfs = reg_net(inputs, training=True)
         pre_images = utils.warp_images(mov_images,ddfs)
-        loss_similarity = tf.reduce_mean(utils.sum_square_difference(fix_images, pre_images))
-        loss_regularise = tf.reduce_mean(utils.bending_energy(ddfs))
+        loss_similarity = tf.reduce_mean(utils.square_difference(fix_images, pre_images))
+        loss_regularise = tf.reduce_mean(utils.gradient_norm(ddfs))
         loss = loss_similarity + loss_regularise*weight_regulariser
     gradients = tape.gradient(loss, reg_net.trainable_variables)
     optimizer.apply_gradients(zip(gradients, reg_net.trainable_variables))
@@ -53,8 +53,8 @@ def test_step(mov_images, fix_images):
     inputs = tf.stack([mov_images,fix_images],axis=3)
     ddfs = reg_net(inputs, training=False)
     pre_images = utils.warp_images(mov_images,ddfs)
-    loss_similarity = tf.reduce_mean(utils.sum_square_difference(fix_images, pre_images))
-    loss_regularise = tf.reduce_mean(utils.bending_energy(ddfs))
+    loss_similarity = tf.reduce_mean(utils.square_difference(fix_images, pre_images))
+    loss_regularise = tf.reduce_mean(utils.gradient_norm(ddfs))
     loss = loss_similarity + loss_regularise*weight_regulariser
     return loss, loss_similarity, loss_regularise, pre_images
 
