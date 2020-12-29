@@ -15,7 +15,6 @@ for ext in ["-tf.npy","-pt.npy"]:  # find all npy files
     fmax = []  # find the maximum step
     for test_id in set([f.split('_')[1] for f in files]):
         fmax += [max([f for f in files if f.split('_')[1]==test_id])]
-    
     for f in fmax:
         label = np.load(os.path.join(path_to_save, f))
         image = np.load(os.path.join(path_to_data, "image_"+f.split('_')[1]+".npy"))[::2, ::2, ::2]  # change this per loader

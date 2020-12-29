@@ -9,11 +9,13 @@ import matplotlib.image as mpimg
 import tf_utils as utils
 
 
-## read all the data
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
 PATH_TO_TRAIN = 'data/datasets-hn2dct/train'
 PATH_TO_TEST = 'data/datasets-hn2dct/test'
 PATH_TO_RESULT = 'result'
 
+
+## read all the data
 images = np.stack([mpimg.imread(os.path.join(PATH_TO_TRAIN, f)) for f in os.listdir(PATH_TO_TRAIN) if f.endswith('.png')],axis=0)  # stack at dim=0 consistent with tf
 images = np.pad(images, [(0,0),(0,0),(0,1)])  # padding for an easier image size
 image_size = (images.shape[1], images.shape[2])
