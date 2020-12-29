@@ -4,29 +4,19 @@ import os
 
 import tensorflow as tf
 import numpy as np
-import matplotlib.image as mpimg
 
 import tf_utils as utils
+from np_utils import get_image_arrays
 
 
 os.environ["CUDA_VISIBLE_DEVICES"]="2"
-PATH_TO_TRAIN = 'data/datasets-hn2dct/train'
-PATH_TO_TEST = 'data/datasets-hn2dct/test'
 PATH_TO_RESULT = 'result'
 
 
 ## read all the data
-images = np.stack([mpimg.imread(os.path.join(PATH_TO_TRAIN, f)) for f in os.listdir(PATH_TO_TRAIN) if f.endswith('.png')],axis=0)  # stack at dim=0 consistent with tf
-images = np.pad(images, [(0,0),(0,0),(0,1)])  # padding for an easier image size
+images, test_images, test_indices = get_image_arrays()
 image_size = (images.shape[1], images.shape[2])
 num_data = images.shape[0]
-
-test_images = np.stack([mpimg.imread(os.path.join(PATH_TO_TEST, f)) for f in os.listdir(PATH_TO_TEST) if (f.find('_')==-1 and f.endswith('.png'))],axis=0) 
-test_images = np.pad(test_images, [(0,0),(0,0),(0,1)])  # padding for an easier image size
-
-# image-wise normalisation 
-n = lambda im: (im-np.min(im,axis=(1,2),keepdims=True))/(np.max(im,axis=(1,2),keepdims=True)-np.min(im,axis=(1,2),keepdims=True))  
-images, test_images = n(images), n(test_images)
 
 
 ## settings
@@ -39,7 +29,7 @@ freq_test_save = 5000
 
 
 ## network
-reg_net = utils.UNet(out_channels=2, num_channels_initial=16)  # output ddfs in x,y two channels
+reg_net = utils.UNet(out_channels=2, num_channels_initial=32)  # output ddfs in x,y two channels
 reg_net = reg_net.build(input_shape=image_size+(2,))
 optimizer = tf.optimizers.Adam(learning_rate)
 
