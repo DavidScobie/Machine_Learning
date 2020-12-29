@@ -20,16 +20,16 @@ num_data = images.shape[0]
 
 
 ## settings
-weight_regulariser = 0.001
+weight_regulariser = 0.01
 minibatch_size = 8
-learning_rate = 1e-4
-total_iterations = int(3e5+1)
+learning_rate = 1e-3
+total_iterations = int(1e5+1)
 freq_info_print = 500
 freq_test_save = 5000
 
 
 ## network
-reg_net = utils.UNet(out_channels=2, num_channels_initial=32)  # output ddfs in x,y two channels
+reg_net = utils.UNet(out_channels=2, num_channels_initial=16)  # output ddfs in x,y two channels
 reg_net = reg_net.build(input_shape=image_size+(2,))
 optimizer = tf.optimizers.Adam(learning_rate)
 
@@ -62,7 +62,6 @@ def test_step(mov_images, fix_images):
 ## training
 num_minibatch = int(num_data/minibatch_size/2)
 train_indices = [i for i in range(num_data)]
-test_indices = [[0,0,1,1,2,2],[1,2,0,2,0,1]] # [moving,fixed]
 for step in range(total_iterations):
 
     if step in range(0, total_iterations, num_minibatch):

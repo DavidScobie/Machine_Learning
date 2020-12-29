@@ -11,15 +11,15 @@ class UNet(tf.keras.Model):
         super(UNet, self).__init__()
         # the encoder/downsampler is a series of downsample blocks implemented in TensorFlow examples.
         self.down_stack = [
-            pix2pix.downsample(num_channels_initial, 3),  
-            pix2pix.downsample(num_channels_initial*2, 3),
-            pix2pix.downsample(num_channels_initial*4, 3)
+            pix2pix.downsample(num_channels_initial, 3, norm_type='instancenorm'),  
+            pix2pix.downsample(num_channels_initial*2, 3, norm_type='instancenorm'),
+            pix2pix.downsample(num_channels_initial*4, 3, norm_type='instancenorm')
         ]
         # The decoder/upsampler is a series of upsample blocks implemented in TensorFlow examples.
         self.up_stack = [
-            pix2pix.upsample(num_channels_initial*4, 3),
-            pix2pix.upsample(num_channels_initial*2, 3), 
-            pix2pix.upsample(num_channels_initial, 3),
+            pix2pix.upsample(num_channels_initial*4, 3, norm_type='instancenorm'),
+            pix2pix.upsample(num_channels_initial*2, 3, norm_type='instancenorm'), 
+            pix2pix.upsample(num_channels_initial, 3, norm_type='instancenorm'),
         ]
         self.out_layer = tf.keras.layers.Conv2DTranspose(out_channels, 3, strides=2, padding='same', activation=None, use_bias=True)
 
@@ -46,9 +46,9 @@ class UNet(tf.keras.Model):
 def get_reference_grid(grid_size):
     # grid_size: [batch_size, height, width]
     grid = tf.cast(tf.stack(tf.meshgrid(
+                        tf.range(grid_size[1]),
                         tf.range(grid_size[2]),
-                        tf.range(grid_size[1])
-                        ), axis=2), dtype=tf.float32)
+                        indexing='ij'), axis=2), dtype=tf.float32)
     return tf.tile(tf.expand_dims(grid, axis=0), [grid_size[0],1,1,1])
 
 
@@ -137,6 +137,7 @@ def gradient_norm(displacement, flag_l1=False):
     else:
         norms = dtdx**2 + dtdy**2
     return tf.reduce_mean(norms, [1, 2, 3])
+
 
 '''
 def bending_energy(displacement):
