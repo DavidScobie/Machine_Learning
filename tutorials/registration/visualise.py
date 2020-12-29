@@ -3,28 +3,41 @@
 import os
 
 import numpy as np
+import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 
 
 PATH_TO_TEST = 'data/datasets-hn2dct/test'
 PATH_TO_RESULT = 'result'
+test_indices = [[0,0,1,1,2,2],[1,2,0,2,0,1]]
+test_images = np.stack([mpimg.imread(os.path.join(PATH_TO_TEST, f)) for f in os.listdir(PATH_TO_TEST) if (f.find('_')==-1 and f.endswith('.png'))],axis=0) 
+test_images = np.pad(test_images, [(0,0),(0,0),(0,1)])  # padding for an easier image size
 
 # to plot example slices of segmentation results
 for ext in ["-tf.npy","-pt.npy"]:  # find all npy files
-    files = [f for f in os.listdir(path_to_save) if f.endswith(ext)]  
-    fmax = []  # find the maximum step
-    for test_id in set([f.split('_')[1] for f in files]):
-        fmax += [max([f for f in files if f.split('_')[1]==test_id])]
-    for f in fmax:
-        label = np.load(os.path.join(path_to_save, f))
-        image = np.load(os.path.join(path_to_data, "image_"+f.split('_')[1]+".npy"))[::2, ::2, ::2]  # change this per loader
-        slices = range(0,label.shape[0],3)  # we only display a subset of data
-        montage = np.concatenate([np.concatenate([image[i,...] for i in slices],axis=0),
-                                  np.concatenate([label[i,...]*np.max(image) for i in slices],axis=0)], axis=1)
+    files = [f for f in os.listdir(PATH_TO_RESULT) if f.endswith(ext)]
+    if len(files)==0: continue
+    pre_images = np.load(os.path.join(PATH_TO_RESULT,max(files)))  # find the maximum step
+
+    for ii in range(pre_images.shape[0]):
         plt.figure()
-        plt.imshow(montage, cmap='gray')
-        plt.title(f.split('.')[0])
+        axs = plt.subplot(1, 3, 1)
+        axs.set_title('moving')
+        axs.imshow(test_images[test_indices[0][ii],...], cmap='gray')
+        axs.axis('off')
+
+        axs = plt.subplot(1, 3, 2)
+        axs.set_title('registered')
+        axs.imshow(pre_images[ii,...], cmap='gray')
+        axs.axis('off')
+
+        axs = plt.subplot(1, 3, 3)
+        axs.set_title('fixed')
+        axs.imshow(test_images[test_indices[1][ii],...], cmap='gray')
+        axs.axis('off')
+
         # plt.show()
-        plt.savefig(os.path.join(path_to_save, f.split('.')[0]+'.jpg'))
+        plt.savefig(os.path.join(PATH_TO_RESULT, '{}-{}.jpg'.format(max(files).split('.')[0],ii)))
         plt.close()
-print('Plots saved: {}'.format(path_to_save))
+
+print('Plots saved: {}'.format(os.path.abspath(PATH_TO_RESULT)))
