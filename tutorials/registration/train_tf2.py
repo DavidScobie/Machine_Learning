@@ -21,12 +21,11 @@ images = np.pad(images, [(0,0),(0,0),(0,1)])  # padding for an easier image size
 image_size = (images.shape[1], images.shape[2])
 num_data = images.shape[0]
 
-
 test_images = np.stack([mpimg.imread(os.path.join(PATH_TO_TEST, f)) for f in os.listdir(PATH_TO_TEST) if (f.find('_')==-1 and f.endswith('.png'))],axis=0) 
-test_images = np.pad(images, [(0,0),(0,0),(0,1)])  # padding for an easier image size
+test_images = np.pad(test_images, [(0,0),(0,0),(0,1)])  # padding for an easier image size
 
 ## settings
-weight_regulariser = 1e-1
+weight_regulariser = 0.1
 minibatch_size = 8
 learning_rate = 1e-3
 total_iterations = int(1e5)
@@ -86,7 +85,7 @@ for step in range(total_iterations):
         print('  Moving-fixed image pair indices: %s - %s' % (indices_moving, indices_fixed))
     
     if step in range(0, total_iterations, freq_test_save):
-        loss_test, loss_sim_test, loss_reg_test, pre_images_test = test_step(images[test_indices[0],...],images[test_indices[1],...])
+        loss_test, loss_sim_test, loss_reg_test, pre_images_test = test_step(test_images[test_indices[0],...],test_images[test_indices[1],...])
         print('*** Test *** Step %d: Loss=%f (similarity=%f, regulariser=%f)' %
               (step, loss_test, loss_sim_test, loss_reg_test))
         filepath_to_save = os.path.join(PATH_TO_RESULT, "test_step%06d-tf.npy" % step)
