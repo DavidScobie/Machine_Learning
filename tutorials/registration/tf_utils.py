@@ -52,21 +52,13 @@ def get_reference_grid(grid_size):
     return tf.tile(tf.expand_dims(grid, axis=0), [grid_size[0],1,1,1])
 
 
-def warp_grids(grid, transform):
-    # grid: [batch, height, width, 2]
-    # transform: [batch, 3, 3]
-    batch_size, height, width = grid.shape[0:3]
-    grid = tf.concat([tf.reshape(grid,[batch_size,height*width,2]), 
-                    tf.ones([batch_size,height*width,1])], axis=2)
-    grid_warped = tf.matmul(grid, transform)
-    return tf.reshape(grid_warped[...,:2], [batch_size,height,width,2])
-
 def warp_images(images, ddfs):
     # images: [batch_size, height, width]
     # ddfs: [batch_size, height, width, 2]
     reference_grid = get_reference_grid(ddfs.shape[0:3])
     warped_grids = reference_grid + ddfs
     return bilinear_resampler(images, warped_grids)
+
 
 def bilinear_resampler(grid_data, sample_grids):
     '''
@@ -94,7 +86,19 @@ def bilinear_resampler(grid_data, sample_grids):
     wj0 = 1 - wj1
     return tf.reshape(q00*wi0*wj0 + q01*wi0*wj1 + q11*wi1*wj1 + q10*wi1*wj0, [batch_size]+sample_grids.shape[1:3])
 
+
+
 '''
+def warp_grids(grid, transform):
+    # grid: [batch, height, width, 2]
+    # transform: [batch, 3, 3]
+    batch_size, height, width = grid.shape[0:3]
+    grid = tf.concat([tf.reshape(grid,[batch_size,height*width,2]), 
+                    tf.ones([batch_size,height*width,1])], axis=2)
+    grid_warped = tf.matmul(grid, transform)
+    return tf.reshape(grid_warped[...,:2], [batch_size,height,width,2])
+
+
 def random_transform_generator(batch_size, corner_scale=.1):
     # right-multiplication affine
     ori_corners = tf.tile([[[1.,1.], [1.,-1.], [-1.,1.], [-1.,-1.]]], [batch_size,1,1])

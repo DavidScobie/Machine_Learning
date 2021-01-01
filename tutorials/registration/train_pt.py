@@ -56,7 +56,7 @@ for step in range(total_iterations):
         moving_images, fixed_images = moving_images.cuda(), fixed_images.cuda()
 
     optimizer.zero_grad()
-    ddfs = reg_net(torch.stack(moving_images,fixed_images,dim=3))
+    ddfs = reg_net(torch.stack((moving_images,fixed_images),dim=1))
     pre_images  = utils.warp_images(moving_images, ddfs)
     loss_sim_train = utils.square_difference(pre_images, fixed_images)
     loss_reg_train = utils.gradient_norm(ddfs)
@@ -76,7 +76,7 @@ for step in range(total_iterations):
         if use_cuda:
             moving_images_test, fixed_images_test = moving_images_test.cuda(), fixed_images_test.cuda()
         
-        ddfs_test = reg_net(torch.stack(moving_images_test,fixed_images_test,dim=3))
+        ddfs_test = reg_net(torch.stack((moving_images_test,fixed_images_test),dim=1))
         pre_images_test  = utils.warp_images(moving_images_test, ddfs_test)
         loss_sim_test = utils.square_difference(pre_images, fixed_images_test)
         loss_reg_test = utils.gradient_norm(ddfs_test)
