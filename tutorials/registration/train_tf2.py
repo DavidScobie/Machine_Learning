@@ -4,7 +4,7 @@ import os
 
 import tensorflow as tf
 import numpy as np
-
+import matplotlib.pyplot as plt
 import tf_utils as utils
 from np_utils import get_image_arrays
 
@@ -23,13 +23,13 @@ num_data = images.shape[0]
 weight_regulariser = 0.01
 minibatch_size = 8
 learning_rate = 1e-3
-total_iterations = int(1e5+1)
-freq_info_print = 500
-freq_test_save = 5000
+total_iterations = int(2e4+1)
+freq_info_print = 200
+freq_test_save = 2000
 
 
 ## network
-reg_net = utils.UNet(out_channels=2, num_channels_initial=16)  # output ddfs in x,y two channels
+reg_net = utils.UNet(out_channels=2, num_channels_initial=32)  # output ddfs in x,y two channels
 reg_net = reg_net.build(input_shape=image_size+(2,))
 optimizer = tf.optimizers.Adam(learning_rate)
 
@@ -73,20 +73,18 @@ for step in range(total_iterations):
     indices_fixed = train_indices[::-1][minibatch_idx*minibatch_size:(minibatch_idx+1)*minibatch_size]
 
     loss_train, loss_sim_train, loss_reg_train = train_step(
-        tf.convert_to_tensor(images[indices_moving,...]),
-        tf.convert_to_tensor(images[indices_fixed,...]))
+        mov_images=tf.convert_to_tensor(images[indices_moving,...]),
+        fix_images=tf.convert_to_tensor(images[indices_fixed,...]))
 
     if step in range(0, total_iterations, freq_info_print):
-        print('Step %d: Loss=%f (similarity=%f, regulariser=%f)' %
-              (step, loss_train, loss_sim_train, loss_reg_train))
+        print('Step %d: Loss=%f (similarity=%f, regulariser=%f)' % (step, loss_train, loss_sim_train, loss_reg_train))
         print('  Moving-fixed image pair indices: %s - %s' % (indices_moving, indices_fixed))
     
     if step in range(0, total_iterations, freq_test_save):
         loss_test, loss_sim_test, loss_reg_test, pre_images_test = test_step(
-            tf.convert_to_tensor(test_images[test_indices[0],...]),
-            tf.convert_to_tensor(test_images[test_indices[1],...]))
-        print('*** Test *** Step %d: Loss=%f (similarity=%f, regulariser=%f)' %
-              (step, loss_test, loss_sim_test, loss_reg_test))
+            mov_images=tf.convert_to_tensor(test_images[test_indices[0],...]),
+            fix_images=tf.convert_to_tensor(test_images[test_indices[1],...]))
+        print('*** Test *** Step %d: Loss=%f (similarity=%f, regulariser=%f)' % (step, loss_test, loss_sim_test, loss_reg_test))
         filepath_to_save = os.path.join(PATH_TO_RESULT, "test_step%06d-tf.npy" % step)
         np.save(filepath_to_save, pre_images_test)
         tf.print('Test data saved: {}'.format(filepath_to_save))
