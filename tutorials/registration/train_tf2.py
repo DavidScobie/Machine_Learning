@@ -1,10 +1,10 @@
-# (Model) this uses TensorFlow-2
+# This script uses TensorFlow-2
 import random
 import os
 
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
+
 import tf_utils as utils
 from np_utils import get_image_arrays
 
