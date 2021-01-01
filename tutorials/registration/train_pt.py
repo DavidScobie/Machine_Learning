@@ -34,6 +34,7 @@ if use_cuda:
     reg_net.cuda()
 
 ## training
+optimizer = torch.optim.Adam(reg_net.parameters(), lr=learning_rate)
 num_minibatch = int(num_data/minibatch_size/2)
 train_indices = [i for i in range(num_data)]
 # optimisation loop
@@ -55,8 +56,8 @@ for step in range(total_iterations):
     optimizer.zero_grad()
     ddfs = reg_net(torch.stack((moving_images,fixed_images),dim=1))
     pre_images  = utils.warp_images(moving_images, ddfs)
-    loss_sim_train = utils.square_difference(pre_images, fixed_images)
-    loss_reg_train = utils.gradient_norm(ddfs)
+    loss_sim_train = torch.mean(utils.square_difference(pre_images, fixed_images))
+    loss_reg_train = torch.mean(utils.gradient_norm(ddfs))
     loss_train = loss_sim_train + loss_reg_train*weight_regulariser
     loss_train.backward()
     optimizer.step()
@@ -75,14 +76,14 @@ for step in range(total_iterations):
         
         ddfs_test = reg_net(torch.stack((moving_images_test,fixed_images_test),dim=1))
         pre_images_test  = utils.warp_images(moving_images_test, ddfs_test)
-        loss_sim_test = utils.square_difference(pre_images, fixed_images_test)
-        loss_reg_test = utils.gradient_norm(ddfs_test)
+        loss_sim_test = torch.mean(utils.square_difference(pre_images_test, fixed_images_test))
+        loss_reg_test = torch.mean(utils.gradient_norm(ddfs_test))
         loss_test = loss_sim_test + loss_reg_test*weight_regulariser
 
         print('*** Test *** Step %d: Loss=%f (similarity=%f, regulariser=%f)' % (step, loss_test, loss_sim_test, loss_reg_test))
-        filepath_to_save = os.path.join(PATH_TO_RESULT, "test_step%06d-tf.npy" % step)
-        np.save(filepath_to_save, pre_images_test)
-        tf.print('Test data saved: {}'.format(filepath_to_save))
+        filepath_to_save = os.path.join(PATH_TO_RESULT, "test_step%06d-pt.npy" % step)
+        np.save(filepath_to_save, pre_images_test.detach().numpy())
+        print('Test data saved: {}'.format(filepath_to_save))
 
 print('Training done.')
 
