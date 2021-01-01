@@ -19,7 +19,6 @@ images, test_images, test_indices = get_image_arrays()
 image_size = (images.shape[1], images.shape[2])
 num_data = images.shape[0]
 
-
 ## settings
 weight_regulariser = 0.01
 minibatch_size = 8
@@ -27,7 +26,6 @@ learning_rate = 1e-3
 total_iterations = int(2e4+1)
 freq_info_print = 200
 freq_test_save = 2000
-
 
 ## network
 reg_net = torch.hub.load('mateuszbuda/brain-segmentation-pytorch', 'unet',
@@ -38,7 +36,6 @@ if use_cuda:
 ## training
 num_minibatch = int(num_data/minibatch_size/2)
 train_indices = [i for i in range(num_data)]
-
 # optimisation loop
 for step in range(total_iterations):
 

@@ -18,7 +18,6 @@ images, test_images, test_indices = get_image_arrays()
 image_size = (images.shape[1], images.shape[2])
 num_data = images.shape[0]
 
-
 ## settings
 weight_regulariser = 0.01
 minibatch_size = 8
@@ -26,7 +25,6 @@ learning_rate = 1e-3
 total_iterations = int(2e4+1)
 freq_info_print = 200
 freq_test_save = 2000
-
 
 ## network
 reg_net = utils.UNet(out_channels=2, num_channels_initial=32)  # output ddfs in x,y two channels
@@ -47,7 +45,7 @@ def train_step(mov_images, fix_images):
     optimizer.apply_gradients(zip(gradients, reg_net.trainable_variables))
     return loss, loss_similarity, loss_regularise
 
-## test
+## test step
 @tf.function
 def test_step(mov_images, fix_images):
     inputs = tf.stack([mov_images,fix_images],axis=3)
