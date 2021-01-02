@@ -79,7 +79,7 @@ for step in range(total_iterations):
             moving_images_test, fixed_images_test = moving_images_test.cuda(), fixed_images_test.cuda()
         
         ddfs_test = reg_net(torch.stack((moving_images_test,fixed_images_test),dim=1))
-        pre_images_test  = utils.warp_images(moving_images_test, ddfs_test)
+        pre_images_test  = utils.warp_images(moving_images_test, ddfs_test, reference_grids)
         loss_sim_test = torch.mean(utils.square_difference(pre_images_test, fixed_images_test))
         loss_reg_test = torch.mean(utils.gradient_norm(ddfs_test))
         loss_test = loss_sim_test + loss_reg_test*weight_regulariser
