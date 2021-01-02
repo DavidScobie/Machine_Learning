@@ -21,15 +21,16 @@ num_data = images.shape[0]
 
 ## settings
 weight_regulariser = 0.01
-minibatch_size = 8
+minibatch_size = 16
 learning_rate = 1e-3
-total_iterations = int(2e4+1)
-freq_info_print = 200
-freq_test_save = 2000
+total_iterations = int(5e4+1)
+freq_info_print = 500
+freq_test_save = 5000
 
 ## network
 reg_net = torch.hub.load('mateuszbuda/brain-segmentation-pytorch', 'unet',
-    in_channels=2, out_channels=2, init_features=32, pretrained=False)
+    in_channels=2, out_channels=32, init_features=32, pretrained=False)
+reg_net = torch.nn.Sequential(reg_net, torch.nn.Conv2d(32, 2, 1, bias=True))  # add a conv layer without activation
 if use_cuda:
     reg_net.cuda()
 

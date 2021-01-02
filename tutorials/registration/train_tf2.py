@@ -20,11 +20,11 @@ num_data = images.shape[0]
 
 ## settings
 weight_regulariser = 0.01
-minibatch_size = 8
+minibatch_size = 16
 learning_rate = 1e-3
-total_iterations = int(2e4+1)
-freq_info_print = 200
-freq_test_save = 2000
+total_iterations = int(5e4+1)
+freq_info_print = 500
+freq_test_save = 5000
 
 ## network
 reg_net = utils.UNet(out_channels=2, num_channels_initial=32)  # output ddfs in x,y two channels
