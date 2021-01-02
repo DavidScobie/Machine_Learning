@@ -86,7 +86,7 @@ for step in range(total_iterations):
 
         print('*** Test *** Step %d: Loss=%f (similarity=%f, regulariser=%f)' % (step, loss_test, loss_sim_test, loss_reg_test))
         filepath_to_save = os.path.join(PATH_TO_RESULT, "test_step%06d-pt.npy" % step)
-        np.save(filepath_to_save, pre_images_test.detach().numpy())
+        np.save(filepath_to_save, pre_images_test.detach().cpu().numpy())
         print('Test data saved: {}'.format(filepath_to_save))
 
 print('Training done.')
