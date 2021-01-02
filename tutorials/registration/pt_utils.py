@@ -3,17 +3,18 @@ import torch
 
 ## transformation functions
 def get_reference_grid(grid_size):
-    # grid_size: [batch_size, height, width]
-    grid = torch.stack(torch.meshgrid(
-        torch.linspace(-1,1,grid_size[1]),
-        torch.linspace(-1,1,grid_size[2])), axis=0)
-    return grid.repeat(grid_size[0],1,1,1)
+    # grid_size: [height, width]
+    return torch.stack(torch.meshgrid(
+        torch.linspace(-1,1,grid_size[0]),
+        torch.linspace(-1,1,grid_size[1])), axis=0)
 
-def warp_images(images, ddfs):
+
+def warp_images(images, ddfs, ref_grids=None):
     # images: [batch_size, height, width]
     # ddfs: [batch_size, 2, height, width]
-    reference_grid = get_reference_grid([ddfs.shape[i] for i in [0,2,3]]) 
-    warped_grids = reference_grid + ddfs
+    if ref_grids is None:
+        ref_grids = get_reference_grid(ddfs.shape[2:4])
+    warped_grids = ref_grids.repeat(ddfs.shape[0],1,1,1) + ddfs
     warped_grids = warped_grids.permute(0,2,3,1)[...,[1,0]]
     images = torch.unsqueeze(images,dim=1)
     warped_images = torch.nn.functional.grid_sample(images, warped_grids, align_corners=False)

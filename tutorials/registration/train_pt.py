@@ -38,6 +38,9 @@ if use_cuda:
 optimizer = torch.optim.Adam(reg_net.parameters(), lr=learning_rate)
 num_minibatch = int(num_data/minibatch_size/2)
 train_indices = [i for i in range(num_data)]
+reference_grids = utils.get_reference_grid(image_size)
+if use_cuda:
+    reference_grids = reference_grids.cuda()
 # optimisation loop
 for step in range(total_iterations):
 
@@ -56,7 +59,7 @@ for step in range(total_iterations):
 
     optimizer.zero_grad()
     ddfs = reg_net(torch.stack((moving_images,fixed_images),dim=1))
-    pre_images  = utils.warp_images(moving_images, ddfs)
+    pre_images  = utils.warp_images(moving_images, ddfs, reference_grids)
     loss_sim_train = torch.mean(utils.square_difference(pre_images, fixed_images))
     loss_reg_train = torch.mean(utils.gradient_norm(ddfs))
     loss_train = loss_sim_train + loss_reg_train*weight_regulariser
