@@ -1,4 +1,8 @@
-This tutorial implements unsupervised image registration networks for 2D head-and-neck CT images  
+# Registration
+
+This tutorial implements unsupervised registration networks for 2D head-and-neck CT images.  
+
+<img src="../../docs/media/registration.jpg" alt="alt text"/>
 
 
 ## TensorFlow 2 examples
