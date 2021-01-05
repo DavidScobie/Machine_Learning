@@ -1,7 +1,8 @@
 import random
+import os
 
 import h5py
-
+import numpy as np
 
 class H5FrameIterator():
     def __init__(self, filename, batch_size):
@@ -22,4 +23,12 @@ class H5FrameIterator():
         datasets = ['/frame%06d' % idx for idx in batch_frame_ids]
         if self.batch_idx>=self.num_batches:
             raise StopIteration
-        return [self.h5_file[ds][()] for ds in datasets]
+        frames = np.stack([self.h5_file[ds][()] for ds in datasets], axis=0).astype(np.float32)
+        return frames / frames.max(axis=(1,2),keepdims=True)  # normalisation for unsigned data type
+
+
+def save_images(images, idx, dir_path=None):
+    filename = 'images{:04d}'.format(idx)
+    if dir_path is not None:
+        filename = os.path.join(dir_path,filename)
+    np.save(filename, images)

@@ -2,9 +2,13 @@
 
 import tensorflow as tf
 from tensorflow.keras import layers
-import numpy as np
 
 import utils
+
+
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+filename = 'data/images0_60x80_norm.h5'
+RESULT_PATH = './result'
 
 
 ## networks
@@ -13,41 +17,31 @@ def make_generator_model():
     model.add(layers.Dense(20*15*256, use_bias=False, input_shape=(100,)))
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
-
     model.add(layers.Reshape((20, 15, 256)))
     assert model.output_shape == (None, 20, 15, 256) # Note: None is the batch size
-
     model.add(layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
     assert model.output_shape == (None, 20, 15, 128)
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
-
     model.add(layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
     assert model.output_shape == (None, 40, 30, 64)
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
-
     model.add(layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
     assert model.output_shape == (None, 80, 60, 1)
-
     return model
-
 
 def make_discriminator_model():
     model = tf.keras.Sequential()
-    model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=[28, 28, 1]))
+    model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=[80, 60, 1]))
     model.add(layers.LeakyReLU())
     model.add(layers.Dropout(0.3))
-
     model.add(layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'))
     model.add(layers.LeakyReLU())
     model.add(layers.Dropout(0.3))
-
     model.add(layers.Flatten())
     model.add(layers.Dense(1))
-
     return model
-
 
 generator = make_generator_model()
 discriminator = make_discriminator_model()
@@ -68,9 +62,7 @@ generator_optimizer = tf.keras.optimizers.Adam(1e-4)
 discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
 
-
 ## train
-filename = 'data/images0_60x80_norm.h5'
 num_epochs = 50
 batch_size = 16
 noise_dim = 100
@@ -97,18 +89,20 @@ def train_step(images):
     generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
     discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
-# the train loop
+    return gen_loss, disc_loss
+
+
+## the train loop
 for epoch in range(num_epochs):
     for frames in frame_iterator:
-        train_step(frames)
-        
+        gen_loss_train, disc_loss_train = train_step(tf.expand_dims(frames,axis=3))
+    print ('Epoch {}: g-loss={:0.5f}, d-loss={:0.5f}'.format(epoch+1,gen_loss_train,disc_loss_train))
+
     if (epoch + 1) % 10 == 0:  # test
-        predictions = generator(test_input, training=False)
-        np.save('images_at_epoch_{:04d}.npy'.format(epoch), predictions)
+        predictions = generator(seed, training=False)
+        utils.save_images(predictions, epoch, RESULT_PATH)
         print('Test images saved.')
 
-    print ('Epoch {}'.format(epoch+1))
-
 # Generate after the final epoch
-predictions = generator(test_input, training=False)
-np.save('images_at_epoch_{:04d}.npy'.format(epoch), predictions)
+predictions = generator(seed, training=False)
+utils.save_images(predictions, epoch, RESULT_PATH)
