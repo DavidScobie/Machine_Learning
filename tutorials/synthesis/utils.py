@@ -27,8 +27,5 @@ class H5FrameIterator():
         return frames / frames.max(axis=(1,2),keepdims=True)  # normalisation for unsigned data type
 
 
-def save_images(images, idx, dir_path=None):
-    filename = 'images{:04d}'.format(idx)
-    if dir_path is not None:
-        filename = os.path.join(dir_path,filename)
+def save_images(images, filename):
     np.save(filename, images)

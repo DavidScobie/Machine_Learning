@@ -1,4 +1,5 @@
 # This scripts use an example of DCGAN described in a TensorFlow tutorial to simulate ultrasound images: https://www.tensorflow.org/tutorials/generative/dcgan.
+import os
 
 import tensorflow as tf
 from tensorflow.keras import layers
@@ -100,9 +101,9 @@ for epoch in range(num_epochs):
 
     if (epoch + 1) % 10 == 0:  # test
         predictions = generator(seed, training=False)
-        utils.save_images(predictions, epoch, RESULT_PATH)
+        utils.save_images(predictions, os.path.join(RESULT_PATH,'images{:04d}-tf'.format(epoch)))
         print('Test images saved.')
 
 # Generate after the final epoch
 predictions = generator(seed, training=False)
-utils.save_images(predictions, epoch, RESULT_PATH)
+utils.save_images(predictions, os.path.join(RESULT_PATH,'images{:04d}-tf'.format(epoch)))
