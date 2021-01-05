@@ -8,18 +8,18 @@ class H5FrameIterator():
         self.h5_file = h5py.File(filename,'r')
         self.num_frames = len(self.h5_file)
         self.batch_size = batch_size
-        self.num_batches = int(self.num_frames/self.batch_size) # skip the 
-        self.batch_idx = 0
-        self.frame_indices = [i for i in range(self.num_frames)]
-        random.shuffle(self.frame_indices)
+        self.num_batches = int(self.num_frames/self.batch_size) # skip the remainders        
+        self.frame_ids = [i for i in range(self.num_frames)]        
     
     def __iter__(self):
-        self.batch_idx += 1
+        self.batch_idx = 0
+        random.shuffle(self.frame_ids)
         return self
     
     def __next__(self):
-        batch_frame_idx = self.frame_indices[self.batch_idx*self.batch_size:(self.batch_idx+1)*self.batch_size]
-        dataset = '/frame%06d' % batch_frame_idx
-        if self.batch_idx==self.num_batches:
-            return StopIteration
-        return self.h5_file[dataset][()]
+        self.batch_idx += 1
+        batch_frame_ids = self.frame_ids[self.batch_idx*self.batch_size:(self.batch_idx+1)*self.batch_size]
+        datasets = ['/frame%06d' % idx for idx in batch_frame_ids]
+        if self.batch_idx>=self.num_batches:
+            raise StopIteration
+        return [self.h5_file[ds][()] for ds in datasets]
