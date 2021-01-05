@@ -1,9 +1,8 @@
 # This is part of the tutorial materials in the UCL Module MPHY0041: Machine Learning in Medical Imaging
-# run train.py before visualise the results
+# run train_*.py before visualise the results
 import os
 
 import numpy as np
-import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 
 from np_utils import get_image_arrays

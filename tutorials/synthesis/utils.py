@@ -28,4 +28,4 @@ class H5FrameIterator():
 
 
 def save_images(images, filename):
-    np.save(filename, images)
+    np.save(filename, np.squeeze(images))

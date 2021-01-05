@@ -64,7 +64,7 @@ discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
 
 ## train
-num_epochs = 50
+num_epochs = 100
 batch_size = 16
 noise_dim = 100
 num_examples_to_generate = 64
@@ -99,7 +99,7 @@ for epoch in range(num_epochs):
         gen_loss_train, disc_loss_train = train_step(tf.expand_dims(frames,axis=3))
     print ('Epoch {}: g-loss={:0.5f}, d-loss={:0.5f}'.format(epoch+1,gen_loss_train,disc_loss_train))
 
-    if (epoch + 1) % 10 == 0:  # test
+    if (epoch + 1) % 5 == 0:  # test
         predictions = generator(seed, training=False)
         utils.save_images(predictions, os.path.join(RESULT_PATH,'images{:04d}-tf'.format(epoch)))
         print('Test images saved.')
