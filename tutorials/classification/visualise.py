@@ -33,4 +33,4 @@ for iSbj in range(nSbj):
         axs.imshow(frame, cmap='gray')
         axs.axis('off')
 # plt.show()
-plt.savefig('visualise.jpg')
+plt.savefig('visualise.jpg',bbox_inches='tight')

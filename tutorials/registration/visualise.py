@@ -35,7 +35,7 @@ for ext in ["-tf.npy","-pt.npy"]:  # find all npy files
         axs.axis('off')
 
         # plt.show()
-        plt.savefig(os.path.join(PATH_TO_RESULT, '{}-{}.jpg'.format(max(files).split('.')[0],ii)))
+        plt.savefig(os.path.join(PATH_TO_RESULT, '{}-{}.jpg'.format(max(files).split('.')[0],ii)),bbox_inches='tight')
         plt.close()
 
 print('Plots saved: {}'.format(os.path.abspath(PATH_TO_RESULT)))
