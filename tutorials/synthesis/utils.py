@@ -1,23 +1,25 @@
+import random
+
 import h5py
 
 
-
-class H5DataLoader():
+class H5FrameIterator():
     def __init__(self, filename, batch_size):
-        self.h5file = h5py.
-
-
-## data loader using a generator
-num_subjects = tf.keras.utils.HDF5Matrix(filename, '/num_subjects').data.value[0][0]
-subject_indices = range(num_subjects)
-num_frames_per_subject = 1
-def data_generator():
-    for iSbj in subject_indices:
-        dataset = '/subject%06d_num_frames' % iSbj
-        num_frames = tf.keras.utils.HDF5Matrix(filename, dataset)[0][0]
-        idx_frame = random.sample(range(num_frames),num_frames_per_subject)[0]
-        dataset = '/subject%06d_frame%08d' % (iSbj, idx_frame)
-        frame = tf.transpose(tf.keras.utils.HDF5Matrix(filename, dataset)) / 255
-        dataset = '/subject%06d_label%08d' % (iSbj, idx_frame)
-        label = tf.keras.utils.HDF5Matrix(filename, dataset)[0][0]
-        yield (tf.expand_dims(frame, axis=2), label)
+        self.h5_file = h5py.File(filename,'r')
+        self.num_frames = len(self.h5_file)
+        self.batch_size = batch_size
+        self.num_batches = int(self.num_frames/self.batch_size) # skip the 
+        self.batch_idx = 0
+        self.frame_indices = [i for i in range(self.num_frames)]
+        random.shuffle(self.frame_indices)
+    
+    def __iter__(self):
+        self.batch_idx += 1
+        return self
+    
+    def __next__(self):
+        batch_frame_idx = self.frame_indices[self.batch_idx*self.batch_size:(self.batch_idx+1)*self.batch_size]
+        dataset = '/frame%06d' % batch_frame_idx
+        if self.batch_idx==self.num_batches:
+            return StopIteration
+        return self.h5_file[dataset][()]

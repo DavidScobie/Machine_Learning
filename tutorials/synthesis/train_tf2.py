@@ -3,6 +3,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 
+from utils import H5FrameIterator
 
 ## networks
 def make_generator_model():
@@ -102,6 +103,11 @@ def train_step(images):
     generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
     discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
+filename = 'data/images0_60x80_norm.h5'
+frame_iterator = H5FrameIterator(filename, 16)
+
+for iter, frame in enumerate(frame_iterator):
+  print(iter)
 
 def train(dataset, epochs):
   for epoch in range(epochs):
