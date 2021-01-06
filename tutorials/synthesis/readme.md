@@ -8,3 +8,5 @@ The following animates the randomly sampled simulations from 1st to 75th ephoch.
 
 <img src="../../docs/media/synthesis.gif" alt="alt text"/>
 
+
+The local folder [tf1x](./tf1x) contains a TensorFlow 1 implementation of [the spatially-conditioned GANs](https://arxiv.org/ftp/arxiv/papers/1707/1707.05392.pdf).

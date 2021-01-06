@@ -12,7 +12,8 @@ pip install -q git+https://github.com/tensorflow/examples.git
 ```
 
 ## Other materials
-A series tutorials for image registration can be found in the [Learn2Reg tutorial](https://github.com/learn2reg/tutorials2019).
-For 3D examples of medical image registration using deep learning, see the [DeepReg](http://deepreg.net) package at [GitHub](https://github.com/DeepRegNet/DeepReg). 
+A series tutorials for image registration can be found in the [Learn2Reg tutorial](https://github.com/learn2reg/tutorials2019). 
 
-The local folder [tf1x](./tf1x) contains a fullly functional 2d version using TensorFlow 1
+For 3D medical image registration using deep learning, see the [DeepReg](http://deepreg.net) package at [GitHub](https://github.com/DeepRegNet/DeepReg). 
+
+The local folder [tf1x](./tf1x) contains a 2d version using TensorFlow 1.
