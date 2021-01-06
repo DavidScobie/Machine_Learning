@@ -1,8 +1,8 @@
 # Deep Learning for Medical Imaging
 
-**Part of the UCL Module MPHY0041: Machine Learning in Medical Imaging**
+**Part of the UCL Module MPHY0041: Machine Learning in Medical Imaging** (Module Lead: Dr Andre Altmann <a.altmann@ucl.ac.uk>)
 
-**Lecturer:** Yipeng Hu (yipeng.hu@ucl.ac.uk)
+**Lecturer:** Yipeng Hu <yipeng.hu@ucl.ac.uk>
 
 ## Development environments
 
