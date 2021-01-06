@@ -18,6 +18,7 @@ nz = 100  #size of noise
 ngf = 64  #number of feature maps in generator
 ndf = 64  #number of feature maps in discriminator
 
+# weight initialisation
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -51,7 +52,6 @@ netG = Generator()
 if use_cuda:
     netG.cuda()
 netG.apply(weights_init)
-print(netG)
 
 
 class Discriminator(nn.Module):
@@ -77,7 +77,6 @@ netD = Discriminator()
 if use_cuda:
     netD.cuda()
 netD.apply(weights_init)
-print(netD)
 
 
 ## losses and optimisers
@@ -93,9 +92,8 @@ optimizerG = torch.optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 batch_size = 16
 num_epochs = 50
 num_examples_to_generate = 64
-
-frame_iterator = utils.H5FrameIterator(filename, batch_size)
 fixed_noise = torch.randn(num_examples_to_generate, nz)
+frame_iterator = utils.H5FrameIterator(filename, batch_size)
 if use_cuda:
     fixed_noise = fixed_noise.cuda()
 
@@ -131,8 +129,8 @@ for epoch in range(num_epochs):
     # print every epoch
     print ('Epoch {}: g-loss={:0.5f}, d-loss={:0.5f}'.format(epoch+1,errG.item(),errD.item()))
 
-    if (epoch + 1) % 10 == 0:  # test every 10 epochs
+    if (epoch+1) % 10 == 0:  # test every 10 epochs
         with torch.no_grad():
             predictions = netG(fixed_noise).detach().cpu().numpy()
-            utils.save_images(predictions, os.path.join(RESULT_PATH,'images{:04d}-pt'.format(epoch)))
+            utils.save_images(predictions, os.path.join(RESULT_PATH,'images{:04d}-pt'.format(epoch+1)))
             print('Test images saved.')

@@ -104,5 +104,5 @@ for epoch in range(num_epochs):
 
     if (epoch + 1) % 10 == 0:  # test every 10 epochs
         predictions = generator(seed, training=False)
-        utils.save_images(predictions, os.path.join(RESULT_PATH,'images{:04d}-tf'.format(epoch)))
+        utils.save_images(predictions, os.path.join(RESULT_PATH,'images{:04d}-tf'.format(epoch+1)))
         print('Test images saved.')
