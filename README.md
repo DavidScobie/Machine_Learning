@@ -1,5 +1,4 @@
-# Deep Learning for Medical Imaging
-
+# Deep Learning
 Part of the UCL Module MPHY0041: Machine Learning in Medical Imaging (Module Lead: Dr Andre Altmann <a.altmann@ucl.ac.uk>)
 
 **Lecturer:** Yipeng Hu <yipeng.hu@ucl.ac.uk>
@@ -49,10 +48,10 @@ Visualise example data and (predicted) labels:
 python visualise.py
 ```
 
-### 2D Image clssification
-[Anatomical structure classification on ultrasound images](tutorials/classification)
+### Image clssification
+[Anatomical structure classification on 2D ultrasound images](tutorials/classification)
 
-### 3D Image segmentation
+### Image segmentation
 [Segmentation of organs on 3D MR images](tutorials/segmentation)
 
 ### Image registration*
