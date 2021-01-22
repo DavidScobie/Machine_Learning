@@ -46,22 +46,26 @@ print(test_scale_feat['AGE'][3])
 Ypred=[]
 arg = []
 for i in range (len(testdata)):
-    # for feature in feat_heads:
-    #     arg.append('test_scale_feat[feature][i]') 
-    # # print(arg)
     Ypred.append(reg.predict(np.array([[test_scale_feat['AGE'][i],test_scale_feat['Ventricles'][i],test_scale_feat['Hippocampus'][i],test_scale_feat['Entorhinal'][i],test_scale_feat['Fusiform'][i],test_scale_feat['APOE4'][i],test_scale_feat['FDG'][i],test_scale_feat['AV45'][i]]])))
-    # Ypred.append(reg.predict(np.array(arg)))
     arg = 0
 testdata['YPred']=Ypred
-print(testdata)
+# print(testdata)
 
-
-
-# fig, axs = plt.subplots(3, 3)
 # axs[0,0].plot(scale_feat['AGE'],response,'o', color='black')
 # # plt.plot(scale_feat['AGE'],response,'o', color='black')
 # axs[0,1].plot(scale_feat['Ventricles'],response,'o', color='black')
 # # plt.plot(scale_feat['Ventricles'],response,'o', color='black')
 # axs[0,2].plot(scale_feat['Hippocampus'],response,'o', color='black')
 # # axs.set_aspect('equal')
-# plt.show()
+
+
+# print(testdata['ADAS13'].to_numpy())
+# print(testdata['YPred'].to_numpy())
+
+
+#print(np.corrcoef(testdata['ADAS13'].to_numpy(), testdata['YPred'].to_numpy()))
+
+plt.plot(testdata['ADAS13'],testdata['YPred'],'o', color='black')
+plt.ylabel('prdeicted')
+plt.xlabel('observed')
+plt.show()
