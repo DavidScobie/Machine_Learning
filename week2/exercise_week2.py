@@ -2,7 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.metrics import mean_squared_error
 
 traindata = pd.read_csv('adni_adas13_train.csv')
 
@@ -28,7 +29,8 @@ print(scale_feat)
 reg = LinearRegression().fit(scale_feat,response)
 print(reg.score(scale_feat,response))
 print(reg.coef_)
-print(reg.predict(np.array([[3, 5,0,0,0,0,0,0]])))
+print(reg.intercept_)
+print(reg.predict(np.array([[3, 0,0,0,0,0,0,0]])))
 
 
 #normalise test data
@@ -49,23 +51,21 @@ for i in range (len(testdata)):
     Ypred.append(reg.predict(np.array([[test_scale_feat['AGE'][i],test_scale_feat['Ventricles'][i],test_scale_feat['Hippocampus'][i],test_scale_feat['Entorhinal'][i],test_scale_feat['Fusiform'][i],test_scale_feat['APOE4'][i],test_scale_feat['FDG'][i],test_scale_feat['AV45'][i]]])))
     arg = 0
 testdata['YPred']=Ypred
-# print(testdata)
+print(testdata)
 
-# axs[0,0].plot(scale_feat['AGE'],response,'o', color='black')
-# # plt.plot(scale_feat['AGE'],response,'o', color='black')
-# axs[0,1].plot(scale_feat['Ventricles'],response,'o', color='black')
-# # plt.plot(scale_feat['Ventricles'],response,'o', color='black')
-# axs[0,2].plot(scale_feat['Hippocampus'],response,'o', color='black')
-# # axs.set_aspect('equal')
+fig, axs = plt.subplots(3, 3)
+axs[0,0].plot(scale_feat['AGE'],response,'o', color='black')
+axs[0,0].set(xlabel='AGE', ylabel='y')
+axs[0,1].plot(scale_feat['Ventricles'],response,'o', color='black')
+axs[0,1].set(xlabel='Ventricles', ylabel='y')
+axs[0,2].plot(scale_feat['Hippocampus'],response,'o', color='black')
+axs[0,2].set(xlabel='Hippocampus', ylabel='y')
+
+print(np.corrcoef(testdata['ADAS13'].to_numpy().astype(float),testdata['YPred'].to_numpy().astype(float)))
+print(mean_squared_error(testdata['ADAS13'].to_numpy().astype(float),testdata['YPred'].to_numpy().astype(float)))
 
 
-# print(testdata['ADAS13'].to_numpy())
-# print(testdata['YPred'].to_numpy())
-
-
-#print(np.corrcoef(testdata['ADAS13'].to_numpy(), testdata['YPred'].to_numpy()))
-
-plt.plot(testdata['ADAS13'],testdata['YPred'],'o', color='black')
-plt.ylabel('prdeicted')
-plt.xlabel('observed')
+# plt.plot(testdata['ADAS13'],testdata['YPred'],'o', color='black')
+# plt.ylabel('prdeicted')
+# plt.xlabel('observed')
 plt.show()
