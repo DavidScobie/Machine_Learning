@@ -24,7 +24,7 @@ Learning materials for TensorFlow for Medical Imaging are recommended in [Learni
 
 Learning materials for PyTorch for Medical Imaging are recommended in [Learning PyTorch for Medical Imaging](docs/pytorch.md).
 
-### General programming and developping
+### General programming and software development
 This is outside of the module scope, but you might find useful materials and links in [the UCL Module MPHY0030 Programming Foundations in Medical Image Analysis](https://weisslab.cs.ucl.ac.uk/WEISSTeaching/mphy0030), including: 
 - [Supported development environment for Python](https://weisslab.cs.ucl.ac.uk/WEISSTeaching/mphy0030/-/blob/master/docs/dev_env_python.md)
 - [Work with Git](https://weisslab.cs.ucl.ac.uk/WEISSTeaching/mphy0030/-/blob/master/docs/dev_env_git.md)
