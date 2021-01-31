@@ -72,3 +72,7 @@ python visualise.py
 
 ### Image synthesis*
 [Ultrasound image simulation](tutorials/synthesis)
+
+>Legacy folders
+
+In each tutorial, there may be a legacy folder containing code and document from the past, including code for TensorFlow 1, for Jupyter Notebbok or for data preprocessing. They are not required and are only for reference purpose.
