@@ -10,3 +10,6 @@ The following animates the randomly sampled simulations from 1st to 75th ephoch.
 
 
 The local folder [legacy](./legacy) contains an implementation of [the original spatially-conditioned GANs](https://arxiv.org/ftp/arxiv/papers/1707/1707.05392.pdf) in TensorFlow 1.
+
+
+## Formative assessment
