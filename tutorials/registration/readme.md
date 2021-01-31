@@ -17,6 +17,3 @@ A series tutorials for image registration can be found in the [Learn2Reg tutoria
 For 3D medical image registration using deep learning, see the [DeepReg](http://deepreg.net) package at [GitHub](https://github.com/DeepRegNet/DeepReg). 
 
 The local folder [legacy](./legacy) contains a 2d version using TensorFlow 1.
-
-
-## Formative assessment

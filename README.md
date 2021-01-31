@@ -76,3 +76,6 @@ python visualise.py
 >Legacy folders
 
 In each tutorial, there may be a legacy folder containing code and document from the past, including code for TensorFlow 1, for Jupyter Notebbok or for data preprocessing. They are not required and are only for reference purpose.
+
+## 3. Formative assessment
+A list of tasks are detailed in the [Formative Assessment](docs/formative.md). Complete them for individual tutorials.
