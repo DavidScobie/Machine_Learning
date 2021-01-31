@@ -79,3 +79,6 @@ In each tutorial, there may be a legacy folder containing code and document from
 
 ## 3. Formative assessment
 A list of tasks are detailed in the [Formative Assessment](docs/formative.md). Complete them for individual tutorials.
+
+## 4. Reading list
+Acollection of books and research papers, relevant to deep learning for medical image analysis, is summarised in the [Reading List](docs/reading.md).
