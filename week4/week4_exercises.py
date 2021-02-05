@@ -23,7 +23,7 @@ print(together.shape)
 patchy = extract_patches_2d(together, (5, 5), max_patches=1000)
 print(patchy.shape)
 X = patchy[:,:,:,:-1]
-# print(X.shape)
+print(X.shape)
 X = np.reshape(X,(1000,75))
 Y1 = patchy[:,:,:,-1:]
 Y1 = np.reshape(Y1,(1000,25))
@@ -55,6 +55,7 @@ for i in range (256**2):
 
 
 Y_test_im = np.reshape(Y_test_im, newshape = (256,256,3), order = 'C')
+plt.figure(2)
 plt.imshow(Y_test_im)
 
 Training_slice_path = 'C:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Tumor\\*.tif'
@@ -67,4 +68,4 @@ Train_mask = io.ImageCollection(Train_mask_path)
 Test_slices = io.ImageCollection(Test_slices_path)
 Test_mask = io.ImageCollection(Test_mask_path)
 
-# plt.show()
+plt.show()
