@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.feature_extraction.image import extract_patches_2d
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+from scipy.spatial.distance import dice
 
 Training_slice_path = 'C:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Tumor\\*.tif'
 Train_mask_path = 'C:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Mask\\*.tif'
@@ -15,7 +16,6 @@ Train_slices = np.array(io.ImageCollection(Training_slice_path))
 Train_mask = np.array(io.ImageCollection(Train_mask_path))
 Test_slices = np.array(io.ImageCollection(Test_slices_path))
 Test_mask = np.array(io.ImageCollection(Test_mask_path))
-
 
 
 train_stack = np.stack((Train_slices[:,:,:,0],Train_slices[:,:,:,1],Train_slices[:,:,:,2],Train_mask), axis=3)
@@ -65,12 +65,22 @@ patchy = np.array(patchy)
 patchy = np.reshape(patchy,(65536*5,75))
 
 test_images = RFC.predict(patchy)
+print(np.max(test_images))
+array_tm = np.reshape(Test_mask,(327680,1))
+array_test_mask = []
+for i in range (327680):
+    if array_tm[i] >= 128:
+        array_test_mask.append(1)
+    else:
+        array_test_mask.append(0)
+array_test_mask=np.array(array_test_mask)
+print(np.max(array_test_mask))
+DS = dice(np.array(test_images),array_test_mask)
+print(DS)
 
 Y_test = np.tile(test_images,(75,1))
 Y_test = np.swapaxes(Y_test,0,1)
 Y_test = np.reshape(Y_test, newshape = (65536*5,5,5,3), order = 'C')
-
-#all good up to here
 
 Y_test_im = np.zeros((256**2,3,5))
 for k in range (5):

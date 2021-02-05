@@ -6,12 +6,6 @@ from sklearn.feature_extraction.image import extract_patches_2d
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
-# sys.path.insert(0, os.path.abspath('brain_tumor_custom//Tumor'))
-sys.path.insert(0,"c:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Tumor")
-# sys.path.append("c:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Tumor")
-# sys.path.extend("C:/PHD/Machine_Learning/week4/brain_tumor_custom/Tumor")
-# print(sys.path)
-# sys.path.append('brain_tumor_custom/Tumor')
 slice = io.imread('C:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Tumor\\TCGA_CS_6186_20000601_19.tif')
 segment = io.imread('C:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Mask\\TCGA_CS_6186_20000601_19_mask.tif')
 plt.figure(0)
@@ -27,9 +21,6 @@ print(X.shape)
 X = np.reshape(X,(1000,75))
 Y1 = patchy[:,:,:,-1:]
 Y1 = np.reshape(Y1,(1000,25))
-# print(X.shape)
-# print(Y1[1][1])
-# print(np.max(Y1))
 Y = []
 for i in range (1000):
     if np.sum(Y1[i][:]/(25))>=255/2:
@@ -58,4 +49,4 @@ Y_test_im = np.reshape(Y_test_im, newshape = (256,256,3), order = 'C')
 plt.figure(2)
 plt.imshow(Y_test_im)
 
-# plt.show()
+plt.show()
