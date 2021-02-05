@@ -37,35 +37,49 @@ print(X.shape)
 Y1=np.array(Y1)
 print(Y1.shape)
 
-X = np.einsum('mijkl->ijklm', X)
-Y1 = np.einsum('mijkl->ijklm', Y1)
+X = np.reshape(X,(2000*46,75))
+Y1 = np.reshape(Y1,(2000*46,25))
 print(X.shape)
 
-X = np.reshape(X,(2000,3450))
-Y1 = np.reshape(Y1,(2000,1150))
-# X = train_patch[:,:,:,:-256]
-# print(X.shape)
+Y = []
+for i in range (2000*46):
+    if np.sum(Y1[i][:]/(25))>=255/2:
+        Y.append(1)
+    else:
+        Y.append(0)
+print(np.array(Y).shape)
 
-# Y1 = train_patch[:,:,:,-256:]
-# print(Y1.shape)
+RFC = RandomForestClassifier(n_estimators=100,min_samples_split=5).fit(X, Y)
 
-# X = np.reshape(X,(2000,19200))
-# Y1 = np.reshape(Y1,(2000,6400))
+print(Test_slices[1,:,:,:].shape)
+padded_image=[]
+for i in range (5):
+    padded_image.append(np.pad(Test_slices[i,:,:,:], ((2, 2), (2, 2),(0,0)),'constant',constant_values=0))
+padded_image = np.array(padded_image)
+print(padded_image.shape)
 
-# Y = []
-# for i in range (2000):
-#     if np.sum(Y1[i][:]/(6400))>=255/2:
-#         Y.append(1)
-#     else:
-#         Y.append(0)
+patchy=[]
+for i in range (5):
+    patchy.append(extract_patches_2d(padded_image[i,:,:,:], (5, 5)))
+patchy = np.array(patchy)
+patchy = np.reshape(patchy,(65536*5,75))
 
+test_images = RFC.predict(patchy)
 
+Y_test = np.tile(test_images,(75,1))
+Y_test = np.swapaxes(Y_test,0,1)
+Y_test = np.reshape(Y_test, newshape = (65536*5,5,5,3), order = 'C')
 
-# Y = []
-# for i in range (2000):
-#     if np.sum(Y1[i][:]/(25))>=255/2:
-#         Y.append(1)
-#     else:
-#         Y.append(0)
+#all good up to here
 
-# RFC = RandomForestClassifier(n_estimators=100,min_samples_split=5).fit(X, Y)
+Y_test_im = np.zeros((256**2,3,5))
+for k in range (5):
+    for i in range (256**2):
+        for j in range (3):
+            Y_test_im[i,j,k] = np.average(Y_test[i+(k*(256**2)),:,:,j])
+
+for i in range (5):
+    plt.figure(i)
+    Y_test_im = np.reshape(Y_test_im, newshape = (256,256,3,5), order = 'C')
+    plt.imshow(Y_test_im[:,:,:,i])
+plt.show()

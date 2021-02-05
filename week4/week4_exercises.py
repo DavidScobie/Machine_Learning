@@ -36,14 +36,14 @@ for i in range (1000):
         Y.append(1)
     else:
         Y.append(0)
-
+print(np.array(Y).shape)
 RFC = RandomForestClassifier(n_estimators=100,min_samples_split=5).fit(X, Y)
 
 padded_image = np.pad(slice, ((2, 2), (2, 2),(0,0)),'constant',constant_values=0)
 plt.imshow(padded_image)
 patchy2 = extract_patches_2d(padded_image, (5, 5))
 test_image = RFC.predict(np.reshape(patchy2,(65536,75)))
-# print(test_image.shape)
+print(test_image.shape)
 Y_test = np.tile(test_image,(75,1))
 Y_test = np.swapaxes(Y_test,0,1)
 Y_test = np.reshape(Y_test, newshape = (65536,5,5,3), order = 'C')
@@ -58,14 +58,4 @@ Y_test_im = np.reshape(Y_test_im, newshape = (256,256,3), order = 'C')
 plt.figure(2)
 plt.imshow(Y_test_im)
 
-Training_slice_path = 'C:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Tumor\\*.tif'
-Train_mask_path = 'C:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Mask\\*.tif'
-Test_slices_path = 'C:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Test_Tumor\\*.tif'
-Test_mask_path = 'C:\\PHD\\Machine_Learning\\week4\\brain_tumor_custom\\Test_Mask\\*.tif'
-
-Train_slices = io.ImageCollection(Training_slice_path)
-Train_mask = io.ImageCollection(Train_mask_path)
-Test_slices = io.ImageCollection(Test_slices_path)
-Test_mask = io.ImageCollection(Test_mask_path)
-
-plt.show()
+# plt.show()
