@@ -64,8 +64,11 @@ for i in range (5):
 patchy = np.array(patchy)
 patchy = np.reshape(patchy,(65536*5,75))
 
-test_images = RFC.predict(patchy)
+test_images = RFC.predict_proba(patchy)
+test_images = np.transpose(test_images[:,0])
 print(np.max(test_images))
+
+#finding dice score
 array_tm = np.reshape(Test_mask,(327680,1))
 array_test_mask = []
 for i in range (327680):
