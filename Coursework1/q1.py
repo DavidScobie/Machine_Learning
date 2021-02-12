@@ -56,26 +56,44 @@ plt.figure(0)
 plt.plot(x,fx_CN)
 plt.plot(x,fx_Dementia)
 plt.axvline(x=x_bound, ymin=0, ymax=1)
-# plt.show()
+
 
 
 MCI_less.reset_index(drop=True,inplace=True)
-print(list(MCI_less['DX']))
 response = []
 
 for i in range (len(MCI_less)):
-# for index, row  in MCI_less.iterrows():
-    # print(row)
     if (MCI_less['DX'][i]) == 'CN':
         response.append(0)
     else:
         response.append(1)
-print(response)
 #normailse training data
 features = MCI_less[['ABETA','TAU']]
 
 reg = LinearRegression().fit(features,response)
 print(reg.coef_)
+print(reg.intercept_)
+
+w1,w2 = reg.coef_
+b = reg.intercept_
+
+c = (0.5 - b)/w2
+m = -w1/w2
+
+print(m)
+print(c)
+
+xmin, xmax = min(features['ABETA']),max(features['ABETA'])
+ymin, ymax = min(features['TAU']),max(features['TAU'])
+xd = np.array([xmin, xmax])
+yd = m*xd + c
+plt.figure(1)
+plt.plot(xd, yd, 'k', lw=1, ls='--')
+
+
+# MCI_less.plot.scatter(x='ABETA', y='TAU', c=response, colormap='viridis')
+plt.scatter(MCI_less['ABETA'],MCI_less['TAU'], c=response)
+plt.show()
 
 
 
