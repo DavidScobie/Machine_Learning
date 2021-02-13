@@ -131,35 +131,54 @@ print(CN_both_features.shape)
 covar = np.cov(np.transpose(CN_both_features))
 cov_inv = inv(covar)
 
-# print(cov_inv.shape)
-# print(np.transpose(CN_mu-Dementia_mu))
+#orthogonal vectors to the boundaries
+CN_Dementia_orth = np.matmul(cov_inv,np.transpose(CN_mu-Dementia_mu))
+CN_MCI_orth = np.matmul(cov_inv,np.transpose(CN_mu-MCI_mu))
+Dementia_MCI_orth = np.matmul(cov_inv,np.transpose(Dementia_mu-MCI_mu))
 
+#finding midpoints
+CN_Dementia_mid = (CN_mu+Dementia_mu)/2
+CN_MCI_mid = (CN_mu+MCI_mu)/2
+Dementia_MCI_mid = (Dementia_mu+MCI_mu)/2
 
-CN_dementia_orth = np.matmul(cov_inv,np.transpose(CN_mu-Dementia_mu))
-print(CN_dementia_orth)
+#gradient and y intercept
+CN_Dementia_grad = CN_Dementia_orth[0]/-CN_Dementia_orth[1]
+CN_Dementia_c = CN_Dementia_mid[0][1] - (CN_Dementia_grad*CN_Dementia_mid[0][0])
 
-midpoint = (CN_mu+Dementia_mu)/2
-print(midpoint)
+CN_MCI_grad = CN_MCI_orth[0]/-CN_MCI_orth[1]
+CN_MCI_c = CN_MCI_mid[0][1] - (CN_MCI_grad*CN_MCI_mid[0][0])
+
+Dementia_MCI_grad = Dementia_MCI_orth[0]/-Dementia_MCI_orth[1]
+Dementia_MCI_c = Dementia_MCI_mid[0][1] - (Dementia_MCI_grad*Dementia_MCI_mid[0][0])
+
+xd = np.array([0, 10])
+
+print(Dementia_MCI_grad)
+print(CN_MCI_grad)
+print(CN_Dementia_grad)
+
+#equations of boundaries
+y_CN_Dementia = CN_Dementia_grad*xd + CN_Dementia_c
+y_CN_MCI = CN_MCI_grad*xd + CN_MCI_c
+y_Dementia_MCI = Dementia_MCI_grad*xd + Dementia_MCI_c
 
 plt.figure(2)
+
+# plt.plot(xd, y_CN_Dementia, 'k', lw=1, ls='--')
+plt.plot(xd, y_CN_MCI, 'k', lw=1, ls='--')
+# plt.plot(xd, y_Dementia_MCI, 'k', lw=1, ls='--')
+
 plt.scatter(CN_both_features[:,0],CN_both_features[:,1])
-plt.scatter(Dementia_both_features[:,0],Dementia_both_features[:,1])
+# plt.scatter(Dementia_both_features[:,0],Dementia_both_features[:,1])
+plt.scatter(MCI_both_features[:,0],MCI_both_features[:,1])
+
+
+
+
 plt.show()
 
-# Di_fu_CN_s_end = np.matmul(cov_inv,np.transpose(CN_both_features))
-# Di_fu_CN = np.matmul(CN_mu,Di_fu_CN_s_end)
 
-# Di_fu_CN_mid_1 = np.matmul(cov_inv,np.transpose(CN_mu))
-# Di_fu_CN_mid_2 = np.matmul(CN_mu,Di_fu_CN_mid_1)
-# Di_fu_CN_mid = -0.5*Di_fu_CN_mid_2
 
-# Di_fu_CN_end = np.log(0.33)
-
-# Di_fu_CN = Di_fu_CN - Di_fu_CN_mid + Di_fu_CN_end
-# print(Di_fu_CN)
-# plt.figure(2)
-# plt.plot(Di_fu_CN)
-# plt.show()
 
 
 
