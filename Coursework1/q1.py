@@ -131,19 +131,32 @@ print(CN_both_features.shape)
 covar = np.cov(np.transpose(CN_both_features))
 cov_inv = inv(covar)
 
-print(cov_inv.shape)
+# print(cov_inv.shape)
+# print(np.transpose(CN_mu-Dementia_mu))
 
-Di_fu_CN_s_end = np.matmul(cov_inv,np.transpose(CN_both_features))
-Di_fu_CN = np.matmul(CN_mu,Di_fu_CN_s_end)
 
-Di_fu_CN_mid_1 = np.matmul(cov_inv,np.transpose(CN_mu))
-Di_fu_CN_mid_2 = np.matmul(CN_mu,Di_fu_CN_mid_1)
-Di_fu_CN_mid = -0.5*Di_fu_CN_mid_2
+CN_dementia_orth = np.matmul(cov_inv,np.transpose(CN_mu-Dementia_mu))
+print(CN_dementia_orth)
 
-Di_fu_CN_end = np.log(0.33)
+midpoint = (CN_mu+Dementia_mu)/2
+print(midpoint)
 
-Di_fu_CN = Di_fu_CN - Di_fu_CN_mid + Di_fu_CN_end
-print(Di_fu_CN)
+plt.figure(2)
+plt.scatter(CN_both_features[:,0],CN_both_features[:,1])
+plt.scatter(Dementia_both_features[:,0],Dementia_both_features[:,1])
+plt.show()
+
+# Di_fu_CN_s_end = np.matmul(cov_inv,np.transpose(CN_both_features))
+# Di_fu_CN = np.matmul(CN_mu,Di_fu_CN_s_end)
+
+# Di_fu_CN_mid_1 = np.matmul(cov_inv,np.transpose(CN_mu))
+# Di_fu_CN_mid_2 = np.matmul(CN_mu,Di_fu_CN_mid_1)
+# Di_fu_CN_mid = -0.5*Di_fu_CN_mid_2
+
+# Di_fu_CN_end = np.log(0.33)
+
+# Di_fu_CN = Di_fu_CN - Di_fu_CN_mid + Di_fu_CN_end
+# print(Di_fu_CN)
 # plt.figure(2)
 # plt.plot(Di_fu_CN)
 # plt.show()
