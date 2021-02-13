@@ -4,8 +4,11 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_squared_error
+from numpy.linalg import inv
 
-#read training data in
+#a
+
+
 traindata = pd.read_csv('ADNI_CSF.csv')
 MCI_less = traindata[traindata.DX != 'MCI']
 print(MCI_less)
@@ -57,7 +60,7 @@ plt.plot(x,fx_CN)
 plt.plot(x,fx_Dementia)
 plt.axvline(x=x_bound, ymin=0, ymax=1)
 
-
+#b
 
 MCI_less.reset_index(drop=True,inplace=True)
 response = []
@@ -67,7 +70,7 @@ for i in range (len(MCI_less)):
         response.append(0)
     else:
         response.append(1)
-#normailse training data
+
 features = MCI_less[['ABETA','TAU']]
 
 reg = LinearRegression().fit(features,response)
@@ -90,10 +93,64 @@ yd = m*xd + c
 plt.figure(1)
 plt.plot(xd, yd, 'k', lw=1, ls='--')
 
-
-# MCI_less.plot.scatter(x='ABETA', y='TAU', c=response, colormap='viridis')
 plt.scatter(MCI_less['ABETA'],MCI_less['TAU'], c=response)
-plt.show()
+# plt.show()
+
+#c
+
+MCI_only = traindata[traindata.DX == 'MCI']
+mean_MCI_ABETA = MCI_only.ABETA.mean()
+std_MCI_ABETA = MCI_only.ABETA.std()
+print(mean_MCI_ABETA)
+print(std_MCI_ABETA)
+
+CN_abeta = np.array(CN_only['ABETA'])
+Dementia_abeta = np.array(Dementia_only['ABETA'])
+MCI_abeta = np.array(MCI_only['ABETA'])
+CN_tau = np.array(CN_only['TAU'])
+Dementia_tau = np.array(Dementia_only['TAU'])
+MCI_tau = np.array(MCI_only['TAU'])
+
+mean_MCI_ABETA = MCI_only.ABETA.mean()
+mean_MCI_TAU = MCI_only.TAU.mean()
+mean_CN_TAU = CN_only.TAU.mean()
+mean_Dementia_TAU = Dementia_only.TAU.mean()
+
+# x data
+CN_both_features = np.transpose(np.array([CN_abeta,CN_tau]))
+Dementia_both_features = np.transpose(np.array([Dementia_abeta,Dementia_tau]))
+MCI_both_features = np.transpose(np.array([MCI_abeta,MCI_tau]))
+
+# mu
+CN_mu = np.array([mean_CN_ABETA,mean_CN_TAU])[np.newaxis]
+Dementia_mu = np.array([mean_Dementia_ABETA,mean_Dementia_TAU])[np.newaxis]
+MCI_mu = np.array([mean_MCI_ABETA,mean_MCI_TAU])[np.newaxis]
+
+print(CN_both_features.shape)
+
+covar = np.cov(np.transpose(CN_both_features))
+cov_inv = inv(covar)
+
+print(cov_inv.shape)
+
+Di_fu_CN_s_end = np.matmul(cov_inv,np.transpose(CN_both_features))
+Di_fu_CN = np.matmul(CN_mu,Di_fu_CN_s_end)
+
+Di_fu_CN_mid_1 = np.matmul(cov_inv,np.transpose(CN_mu))
+Di_fu_CN_mid_2 = np.matmul(CN_mu,Di_fu_CN_mid_1)
+Di_fu_CN_mid = -0.5*Di_fu_CN_mid_2
+
+Di_fu_CN_end = np.log(0.33)
+
+Di_fu_CN = Di_fu_CN - Di_fu_CN_mid + Di_fu_CN_end
+print(Di_fu_CN)
+# plt.figure(2)
+# plt.plot(Di_fu_CN)
+# plt.show()
+
+
+
+
 
 
 
