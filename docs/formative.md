@@ -1,15 +1,15 @@
 
 # Formative Assessment
-The formative assessment is a list of tasks that are implemented and tested for each tutorial. Design your experiments and discuss the results.
+The formative assessment is a list of tasks that can be implemented for each tutorial. Design your experiments and discuss the results.
 
 ## Validation
-### Validation data set
+### Validation set
 Change the data loader to include an additional validation set, such that the validation set will be evaluated during training.
 
 ### Validation metrics
-Consider what metrics can be used to evaluate the performance of the trained network. Implment them and report and record the results during and after training.
+Consider what metrics can be used to evaluate the performance of the trained network. Implement them. Report (by printing to the terminal or files) and save the results during and after training, respectively.
 
-### Plotting
+### Visualisation
 - Plot the loss from the training set against loss from the validation set. 
 - Plot the loss and the metrics of interest from the validation set.
 - Analyse the results.
@@ -17,7 +17,7 @@ Consider what metrics can be used to evaluate the performance of the trained net
 
 ## Network architecture
 ### Convolutional neural networks
-Adapt the convolutional kernels to dialated kernels (dilations parameter in TensorFlow and PyTorch), observe the changes in training and validation performances.
+Adapt the convolutional kernels to dilated kernels (dilations parameter in TensorFlow and PyTorch), observe the changes in training and validation performances.
 
 ### Residual networks
 Compare the performance with and without using residual networks.
