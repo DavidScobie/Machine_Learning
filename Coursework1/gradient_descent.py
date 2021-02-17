@@ -29,7 +29,7 @@ def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000):
     while (maxiter < 0 or cnt < maxiter) and (improve > epsilon):
         #update rule for the betas
         ### COMPLETE THE UPDATE RULE ###
-        beta_new[0] =
+        beta_new[0] = beta[0] * ()...
         beta_new[1] =
         #make sure we copy the new betas
         beta = np.copy(beta_new)
@@ -39,7 +39,7 @@ def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000):
         error = yhat - y
         #compute the cost function
         ### COMPLETE THIS LINE (SAME AS ABOVE for J_current) ###
-        J_new = 
+        J_new = (1/(2*len(x)))*(np.sum((error)**2))
         #compute the improvement compared to previous round
         improve = J_current - J_new
         #update cost of our current 'fit'
