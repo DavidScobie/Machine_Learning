@@ -164,12 +164,12 @@ y_Dementia_MCI = Dementia_MCI_grad*xd + Dementia_MCI_c
 
 plt.figure(2)
 
-# plt.plot(xd, y_CN_Dementia, 'k', lw=1, ls='--')
+plt.plot(xd, y_CN_Dementia, 'k', lw=1, ls='--')
 plt.plot(xd, y_CN_MCI, 'k', lw=1, ls='--')
-# plt.plot(xd, y_Dementia_MCI, 'k', lw=1, ls='--')
+plt.plot(xd, y_Dementia_MCI, 'k', lw=1, ls='--')
 
 plt.scatter(CN_both_features[:,0],CN_both_features[:,1])
-# plt.scatter(Dementia_both_features[:,0],Dementia_both_features[:,1])
+plt.scatter(Dementia_both_features[:,0],Dementia_both_features[:,1])
 plt.scatter(MCI_both_features[:,0],MCI_both_features[:,1])
 
 
