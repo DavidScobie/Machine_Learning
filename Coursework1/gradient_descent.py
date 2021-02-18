@@ -5,7 +5,8 @@
 #alpha is the learning rate
 #epsilon is the minimum improvement we require to keep on running the optimization
 #maxiter limits the maximum number of iterations (in case we don't converge)
-
+import numpy as np
+import sys
 def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000):
     #unless we start with a specific intialization
     #start with a random solution
@@ -29,8 +30,8 @@ def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000):
     while (maxiter < 0 or cnt < maxiter) and (improve > epsilon):
         #update rule for the betas
         ### COMPLETE THE UPDATE RULE ###
-        beta_new[0] = beta[0] * ()...
-        beta_new[1] =
+        beta_new[0] = beta[0] - alpha*((1/(len(x)))*np.sum(error))
+        beta_new[1] = beta[1] - alpha*((1/(len(x)))*np.sum(error*x))
         #make sure we copy the new betas
         beta = np.copy(beta_new)
         #compute predictions with new beta values
