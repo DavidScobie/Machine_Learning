@@ -7,7 +7,7 @@
 #maxiter limits the maximum number of iterations (in case we don't converge)
 import numpy as np
 import sys
-def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000):
+def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000, Lam=0):
     #unless we start with a specific intialization
     #start with a random solution
     if beta[0] == 0 and beta[1] == 0:
@@ -25,13 +25,15 @@ def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000):
     error = yhat - y
     #Value of the current cost function [here it is just the RSS]
     ### COMPLETE THIS LINE ###
-    J_current = (1/(2*len(x)))*(np.sum((error)**2))
+    # J_current = (1/(2*len(x)))*(np.sum((error)**2))
+    J_current = (1/(2*len(x)))*((np.sum((error)**2))+((beta[1]**2)*Lam))
     #run iterations un
     while (maxiter < 0 or cnt < maxiter) and (improve > epsilon):
         #update rule for the betas
         ### COMPLETE THE UPDATE RULE ###
         beta_new[0] = beta[0] - alpha*((1/(len(x)))*np.sum(error))
-        beta_new[1] = beta[1] - alpha*((1/(len(x)))*np.sum(error*x))
+        # beta_new[1] = beta[1] - alpha*((1/(len(x)))*np.sum(error*x))
+        beta_new[1] = beta[1] - alpha*((1/(len(x)))*np.sum((error*x)+(beta[1]*Lam)))
         #make sure we copy the new betas
         beta = np.copy(beta_new)
         #compute predictions with new beta values
@@ -40,7 +42,8 @@ def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000):
         error = yhat - y
         #compute the cost function
         ### COMPLETE THIS LINE (SAME AS ABOVE for J_current) ###
-        J_new = (1/(2*len(x)))*(np.sum((error)**2))
+        # J_new = (1/(2*len(x)))*(np.sum((error)**2))
+        J_new = (1/(2*len(x)))*((np.sum((error)**2))+((beta[1]**2)*Lam))
         #compute the improvement compared to previous round
         improve = J_current - J_new
         #update cost of our current 'fit'
