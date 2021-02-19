@@ -19,7 +19,6 @@ testdata = pd.read_csv('ADNI_CW1_TEST.csv')
 
 #seperate y and x into separate dataframes
 response = traindata['BRAAK34_SUVR']
-norm_resp = np.round(response/np.max(response),0)
 
 column_headers = list(traindata)
 inputs_list = column_headers[4:]
@@ -32,32 +31,49 @@ for feature in inputs_list:
     scaler = scaler.fit(features[[feature]]).transform(features[[feature]])
     scale_feat[feature] = scaler.reshape(1,len(response))[0]
 
-
-regr = ElasticNet(random_state=0,l1_ratio=0.5)
+#elastic net
+regr = ElasticNet(random_state=0,alpha=0,l1_ratio=0.5)
 regr.fit(np.array(scale_feat),np.array(response))
-# print(regr.coef_)
+print(regr.coef_)
 
-regrCV = ElasticNetCV(cv=10,l1_ratio=0.5)
-regrCV.fit(np.array(scale_feat),np.array(response))
-print(regrCV.alpha_)
+#test data
+test_features = testdata[inputs_list]
 
-
-
-# reg = LogisticRegression(penalty='elasticnet',solver='saga',C=1,l1_ratio=0.5).fit(scale_feat,norm_resp)
-# print(reg.coef_)
-# print(reg.intercept_)
-# print(reg.n_iter_)
-# print(np.max(np.round(response,0)))
-# print(np.min(np.round(response,0)))
+#normailse test data
+test_scale_feat = pd.DataFrame()
+for feature in inputs_list:
+    test_scaler = StandardScaler()
+    test_scaler = test_scaler.fit(test_features[[feature]]).transform(test_features[[feature]])
+    test_scale_feat[feature] = test_scaler.reshape(1,len(test_features))[0]
 
 
-# reg_CV = LogisticRegressionCV(penalty='elasticnet',solver='saga',scoring = 'balanced_accuracy', l1_ratios = [0.5], Cs =10, cv=10).fit(scale_feat,norm_resp)
-# print(reg_CV.coef_)
-# print(reg_CV.Cs_)
-# print(reg_CV.C_)
-# print(reg_CV.n_iter_)
-# prediction = reg_CV.predict(scale_feat)
-# print(prediction)
-# R2 = r2_score(norm_resp, prediction)
-# print(R2)
+#Apply test data to the trained linear regression model
+
+rowy=[]
+for j in range (len(inputs_list)):
+    rowy.append([test_scale_feat[inputs_list[j]][6]])
+flat_list = [item for sublist in rowy for item in sublist]
+print(regr.predict([flat_list]))
+
+Ypred=[]
+rowy=[]
+for i in range (len(testdata)):
+    for j in range (len(inputs_list)):
+        rowy.append([test_scale_feat[inputs_list[j]][i]])
+    flat_list = [item for sublist in rowy for item in sublist]
+    Ypred.append(regr.predict([flat_list]))
+    rowy=[]
+print(Ypred)
+    
+testdata['YPred']=Ypred
+print(testdata['YPred'])
+
+
+# regrCV = ElasticNetCV(cv=10,l1_ratio=0.5)
+# regrCV.fit(np.array(scale_feat),np.array(response))
+# print(regrCV.alpha_)
+
+
+
+
 
