@@ -36,7 +36,7 @@ plt.figure(1)
 # Lambdas = np.array([0,1000,100000])
 Lambdas = np.array([0,1000])
 for Lambda in Lambdas:
-    beta = gradient_descent(y, x, beta=[-1,0.5], alpha = 1, epsilon=1e-10, maxiter=100, Lam=Lambda)
+    beta = gradient_descent(y, x, beta=[-1,0.5], alpha = 1, epsilon=1e-10, maxiter=10000, Lam=Lambda)
     print(beta)
 
     yd = beta[1]*xd + beta[0]
@@ -58,7 +58,7 @@ for Lambda in Lambdas:
 
 plt.figure(3)
 Lambda = 100000
-beta = gradient_descent(y, x, beta=[-1,0.5], alpha = 0.00011, epsilon=1e-10, maxiter=10000, Lam=Lambda)
+beta = gradient_descent(y, x, beta=[-1,0.5], alpha = 1, epsilon=1e-10, maxiter=10000, Lam=Lambda)
 print(beta)
 
 yd = beta[1]*xd + beta[0]

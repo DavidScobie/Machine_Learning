@@ -26,7 +26,7 @@ def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000, 
     #Value of the current cost function [here it is just the RSS]
     ### COMPLETE THIS LINE ###
     # J_current = (1/(2*len(x)))*(np.sum((error)**2))
-    J_current = (1/(2*len(x)))*((np.sum((error)**2))+((beta[1]**2)*Lam))
+    J_current = (1/(2*len(x)))*((np.sum((error)**2))+(((beta[1])**2)*Lam))
     #run iterations un
     while (maxiter < 0 or cnt < maxiter) and (improve > epsilon):
         #update rule for the betas
@@ -43,7 +43,7 @@ def gradient_descent(y, x, beta=[0,0], alpha = 1, epsilon=1e-10, maxiter=10000, 
         #compute the cost function
         ### COMPLETE THIS LINE (SAME AS ABOVE for J_current) ###
         # J_new = (1/(2*len(x)))*(np.sum((error)**2))
-        J_new = (1/(2*len(x)))*((np.sum((error)**2))+((beta[1]**2)*Lam))
+        J_new = (1/(2*len(x)))*((np.sum((error)**2))+(((beta[1])**2)*Lam))
         #compute the improvement compared to previous round
         improve = J_current - J_new
         #update cost of our current 'fit'
