@@ -22,7 +22,7 @@ feat_heads = ['X1','X2']
 for feature in feat_heads:
     scaler = StandardScaler()
     scaler = scaler.fit(features[[feature]]).transform(features[[feature]])
-    scale_feat[feature] = scaler.reshape(1,200)[0]
+    scale_feat[feature] = scaler.reshape(1,200)[0]  
 
 reg = LinearRegression().fit(scale_feat,response)
 w1,w2 = reg.coef_
