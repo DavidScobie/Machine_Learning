@@ -12,6 +12,7 @@ from sklearn.linear_model import ElasticNet
 from sklearn.datasets import make_regression
 from sklearn.linear_model import ElasticNetCV
 from sklearn.svm import SVR
+from sklearn.model_selection import cross_val_score
 
 #b
 
@@ -34,7 +35,14 @@ for feature in inputs_list:
 
 #train a linear kernel SVR
 lin_regr = SVR(kernel='linear')
-lin_regr.fit(np.array(scale_feat),np.array(response))
+
+#optimise linear SVR with cross validation
+seas = np.linspace(0.0001,0.1,num=5)
+for sea in seas:
+    lin_regr_CV = SVR(kernel='linear',C=sea)
+    lin_regr_CV.fit(np.array(scale_feat),np.array(response))
+    lin_cv = cross_val_score(lin_regr_CV,np.array(scale_feat),np.array(response), cv=10, scoring='r2')
+    print(lin_cv)
 
 Ypred_lin_train=[]
 rowy=[]
@@ -48,34 +56,35 @@ for i in range (len(traindata)):
 traindata['YPred_lin']=Ypred_lin_train
 # print(traindata['YPred_lin'])
 
-#train a polynomial kernel SVR
-poly_regr = SVR(kernel='poly',degree=3)
-poly_regr.fit(np.array(scale_feat),np.array(response))
+# #train a polynomial kernel SVR
+# poly_regr = SVR(kernel='poly',degree=3)
+# poly_regr.fit(np.array(scale_feat),np.array(response))
 
-Ypred_poly_train=[]
-rowy=[]
-for i in range (len(traindata)):
-    for j in range (len(inputs_list)):
-        rowy.append([scale_feat[inputs_list[j]][i]])
-    flat_list = [item for sublist in rowy for item in sublist]
-    Ypred_poly_train.append(poly_regr.predict([flat_list]))
-    rowy=[]
+# Ypred_poly_train=[]
+# rowy=[]
+# for i in range (len(traindata)):
+#     for j in range (len(inputs_list)):
+#         rowy.append([scale_feat[inputs_list[j]][i]])
+#     flat_list = [item for sublist in rowy for item in sublist]
+#     Ypred_poly_train.append(poly_regr.predict([flat_list]))
+#     rowy=[]
 
-traindata['YPred_poly']=Ypred_poly_train
-# print(traindata['YPred_poly'])
+# traindata['YPred_poly']=Ypred_poly_train
+# # print(traindata['YPred_poly'])
 
-#train an rbf kernel SVR
-rbf_regr = SVR(kernel='rbf')
-rbf_regr.fit(np.array(scale_feat),np.array(response))
+# #train an rbf kernel SVR
+# rbf_regr = SVR(kernel='rbf')
+# rbf_regr.fit(np.array(scale_feat),np.array(response))
 
-Ypred_rbf_train=[]
-rowy=[]
-for i in range (len(traindata)):
-    for j in range (len(inputs_list)):
-        rowy.append([scale_feat[inputs_list[j]][i]])
-    flat_list = [item for sublist in rowy for item in sublist]
-    Ypred_rbf_train.append(rbf_regr.predict([flat_list]))
-    rowy=[]
+# Ypred_rbf_train=[]
+# rowy=[]
+# for i in range (len(traindata)):
+#     for j in range (len(inputs_list)):
+#         rowy.append([scale_feat[inputs_list[j]][i]])
+#     flat_list = [item for sublist in rowy for item in sublist]
+#     Ypred_rbf_train.append(rbf_regr.predict([flat_list]))
+#     rowy=[]
 
-traindata['YPred_rbf']=Ypred_rbf_train
-print(traindata['YPred_rbf'])
+# traindata['YPred_rbf']=Ypred_rbf_train
+# print(traindata['YPred_rbf'])
+
