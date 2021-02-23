@@ -37,12 +37,46 @@ for feature in inputs_list:
 lin_regr = SVR(kernel='linear')
 
 #optimise linear SVR with cross validation
-seas = np.linspace(0.0001,0.1,num=5)
+no_Cs = 5
+folds = 10
+seas = np.logspace(-6,0,base=10,num=no_Cs)
+lin_cv=[]
+poly_cv=[]
+rbf_cv=[]
 for sea in seas:
     lin_regr_CV = SVR(kernel='linear',C=sea)
     lin_regr_CV.fit(np.array(scale_feat),np.array(response))
-    lin_cv = cross_val_score(lin_regr_CV,np.array(scale_feat),np.array(response), cv=10, scoring='r2')
-    print(lin_cv)
+    lin_cv.append(cross_val_score(lin_regr_CV,np.array(scale_feat),np.array(response), cv=folds, scoring='r2'))   
+
+    poly_regr_CV = SVR(kernel='poly',degree=3,C=sea)
+    poly_regr_CV.fit(np.array(scale_feat),np.array(response))
+    poly_cv.append(cross_val_score(poly_regr_CV,np.array(scale_feat),np.array(response), cv=folds, scoring='r2'))  
+
+    rbf_regr_CV = SVR(kernel='rbf',C=sea)
+    rbf_regr_CV.fit(np.array(scale_feat),np.array(response))
+    rbf_cv.append(cross_val_score(rbf_regr_CV,np.array(scale_feat),np.array(response), cv=folds, scoring='r2'))  
+
+
+avg_lin_cv=[]
+avg_poly_cv=[]
+avg_rbf_cv=[]
+for i in range (no_Cs):
+    avg_lin_cv.append(np.sum(lin_cv[i]/folds))
+    avg_poly_cv.append(np.sum(poly_cv[i]/folds))
+    avg_rbf_cv.append(np.sum(rbf_cv[i]/folds))
+
+fig0 = plt.figure(0)
+ax = plt.subplot(111)
+ax.plot(seas,avg_lin_cv,label='linear')
+ax.plot(seas,avg_poly_cv,label='polynomial')
+ax.plot(seas,avg_rbf_cv,label='rbf')
+plt.xscale('log') 
+plt.xlabel('C')
+plt.ylabel('performance')
+plt.title('Kernel performance')
+ax.legend()
+plt.show()
+
 
 Ypred_lin_train=[]
 rowy=[]
