@@ -88,37 +88,37 @@ for i in range (len(traindata)):
     rowy=[]
 
 traindata['YPred_lin']=Ypred_lin_train
-# print(traindata['YPred_lin'])
+print(traindata['YPred_lin'])
 
-# #train a polynomial kernel SVR
-# poly_regr = SVR(kernel='poly',degree=3)
-# poly_regr.fit(np.array(scale_feat),np.array(response))
+#train a polynomial kernel SVR
+poly_regr = SVR(kernel='poly',degree=3)
+poly_regr.fit(np.array(scale_feat),np.array(response))
 
-# Ypred_poly_train=[]
-# rowy=[]
-# for i in range (len(traindata)):
-#     for j in range (len(inputs_list)):
-#         rowy.append([scale_feat[inputs_list[j]][i]])
-#     flat_list = [item for sublist in rowy for item in sublist]
-#     Ypred_poly_train.append(poly_regr.predict([flat_list]))
-#     rowy=[]
+Ypred_poly_train=[]
+rowy=[]
+for i in range (len(traindata)):
+    for j in range (len(inputs_list)):
+        rowy.append([scale_feat[inputs_list[j]][i]])
+    flat_list = [item for sublist in rowy for item in sublist]
+    Ypred_poly_train.append(poly_regr.predict([flat_list]))
+    rowy=[]
 
-# traindata['YPred_poly']=Ypred_poly_train
-# # print(traindata['YPred_poly'])
+traindata['YPred_poly']=Ypred_poly_train
+# print(traindata['YPred_poly'])
 
-# #train an rbf kernel SVR
-# rbf_regr = SVR(kernel='rbf')
-# rbf_regr.fit(np.array(scale_feat),np.array(response))
+#train an rbf kernel SVR
+rbf_regr = SVR(kernel='rbf')
+rbf_regr.fit(np.array(scale_feat),np.array(response))
 
-# Ypred_rbf_train=[]
-# rowy=[]
-# for i in range (len(traindata)):
-#     for j in range (len(inputs_list)):
-#         rowy.append([scale_feat[inputs_list[j]][i]])
-#     flat_list = [item for sublist in rowy for item in sublist]
-#     Ypred_rbf_train.append(rbf_regr.predict([flat_list]))
-#     rowy=[]
+Ypred_rbf_train=[]
+rowy=[]
+for i in range (len(traindata)):
+    for j in range (len(inputs_list)):
+        rowy.append([scale_feat[inputs_list[j]][i]])
+    flat_list = [item for sublist in rowy for item in sublist]
+    Ypred_rbf_train.append(rbf_regr.predict([flat_list]))
+    rowy=[]
 
-# traindata['YPred_rbf']=Ypred_rbf_train
-# print(traindata['YPred_rbf'])
+traindata['YPred_rbf']=Ypred_rbf_train
+print(traindata['YPred_rbf'])
 

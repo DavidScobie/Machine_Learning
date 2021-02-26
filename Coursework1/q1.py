@@ -151,6 +151,10 @@ CN_MCI_c = CN_MCI_mid[0][1] - (CN_MCI_grad*CN_MCI_mid[0][0])
 Dementia_MCI_grad = Dementia_MCI_orth[0]/-Dementia_MCI_orth[1]
 Dementia_MCI_c = Dementia_MCI_mid[0][1] - (Dementia_MCI_grad*Dementia_MCI_mid[0][0])
 
+print(CN_Dementia_c)
+print(CN_MCI_c)
+print(Dementia_MCI_c)
+
 xd = np.array([0, 10])
 
 print(Dementia_MCI_grad)
