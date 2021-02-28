@@ -64,3 +64,4 @@ for alph in alphas:
 plt.figure(0)
 plt.plot(alphas,train_r2)
 plt.title('Training')    
+plt.show()
