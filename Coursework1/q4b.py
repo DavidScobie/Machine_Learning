@@ -24,7 +24,7 @@ response = traindata['BRAAK34_SUVR']
 test_response = testdata['BRAAK34_SUVR']
 
 column_headers = list(traindata)
-inputs_list = column_headers[4:]
+inputs_list = column_headers[5:]
 features = traindata[inputs_list]
 
 #normailse training data
