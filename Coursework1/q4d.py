@@ -72,76 +72,76 @@ for train_ix, test_ix in cv_outer.split(scale_feat):
 print('R2_score: %.3f (%.3f)' % (mean(outer_results), std(outer_results)))
 
 
-#SVR
-cv_outer = KFold(n_splits=10)
-outer_results = list()
-for train_ix, test_ix in cv_outer.split(scale_feat):
-	# split data
+# #SVR
+# cv_outer = KFold(n_splits=10)
+# outer_results = list()
+# for train_ix, test_ix in cv_outer.split(scale_feat):
+# 	# split data
 
-    X_train = scale_feat.loc[train_ix,inputs_list[:]]
-    X_test = scale_feat.loc[test_ix,inputs_list[:]]
-    y_train = response[train_ix]
-    y_test = response[test_ix]
+#     X_train = scale_feat.loc[train_ix,inputs_list[:]]
+#     X_test = scale_feat.loc[test_ix,inputs_list[:]]
+#     y_train = response[train_ix]
+#     y_test = response[test_ix]
 
-    # configure the cross-validation procedure
-    cv_inner = KFold(n_splits=5)
-	# define the model
-    model = SVR()
-	# define search space
-    space = dict()
-    space['kernel'] = ['linear','poly','rbf']
-    space['C'] = np.logspace(-6,0,base=10,num=20)
-    # define search
-    search = GridSearchCV(model, space, scoring='r2', cv=cv_inner, refit=True)
-	# execute search
-    result = search.fit(X_train, y_train)
-	# get the best performing model fit on the whole training set
-    best_model = result.best_estimator_
-	# evaluate model on the hold out dataset
-    yhat = best_model.predict(X_test)
-	# evaluate the model
-    acc = r2_score(y_test, yhat)
-    # store the result
-    outer_results.append(acc)
-    # report progress
-    print('>R2=%.3f, est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_))
-# summarize the estimated performance of the model
-print('R2_score: %.3f (%.3f)' % (mean(outer_results), std(outer_results)))
+#     # configure the cross-validation procedure
+#     cv_inner = KFold(n_splits=5)
+# 	# define the model
+#     model = SVR()
+# 	# define search space
+#     space = dict()
+#     space['kernel'] = ['linear','poly','rbf']
+#     space['C'] = np.logspace(-6,0,base=10,num=20)
+#     # define search
+#     search = GridSearchCV(model, space, scoring='r2', cv=cv_inner, refit=True)
+# 	# execute search
+#     result = search.fit(X_train, y_train)
+# 	# get the best performing model fit on the whole training set
+#     best_model = result.best_estimator_
+# 	# evaluate model on the hold out dataset
+#     yhat = best_model.predict(X_test)
+# 	# evaluate the model
+#     acc = r2_score(y_test, yhat)
+#     # store the result
+#     outer_results.append(acc)
+#     # report progress
+#     print('>R2=%.3f, est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_))
+# # summarize the estimated performance of the model
+# print('R2_score: %.3f (%.3f)' % (mean(outer_results), std(outer_results)))
 
 
-#Random forest regressor
-cv_outer = KFold(n_splits=10, shuffle=True)
-outer_results = list()
-for train_ix, test_ix in cv_outer.split(scale_feat):
-	# split data
+# #Random forest regressor
+# cv_outer = KFold(n_splits=10, shuffle=True)
+# outer_results = list()
+# for train_ix, test_ix in cv_outer.split(scale_feat):
+# 	# split data
 
-    X_train = scale_feat.loc[train_ix,inputs_list[:]]
-    X_test = scale_feat.loc[test_ix,inputs_list[:]]
-    y_train = response[train_ix]
-    y_test = response[test_ix]
+#     X_train = scale_feat.loc[train_ix,inputs_list[:]]
+#     X_test = scale_feat.loc[test_ix,inputs_list[:]]
+#     y_train = response[train_ix]
+#     y_test = response[test_ix]
 
-    # configure the cross-validation procedure
-    cv_inner = KFold(n_splits=5, shuffle=True)
-	# define the model
-    model = RandomForestRegressor()
-	# define search space
-    space = dict()
-    space['n_estimators'] = [500]
-    space['min_samples_split'] = [5]
-    # define search
-    search = GridSearchCV(model, space, scoring='r2', cv=cv_inner, refit=True)
-	# execute search
-    result = search.fit(X_train, y_train)
-	# get the best performing model fit on the whole training set
-    best_model = result.best_estimator_
-	# evaluate model on the hold out dataset
-    yhat = best_model.predict(X_test)
-	# evaluate the model
-    acc = r2_score(y_test, yhat)
-    # store the result
-    outer_results.append(acc)
-    # report progress
-    print('>R2=%.3f, est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_))
-# summarize the estimated performance of the model
-print('R2_score: %.3f (%.3f)' % (mean(outer_results), std(outer_results)))
+#     # configure the cross-validation procedure
+#     cv_inner = KFold(n_splits=5, shuffle=True)
+# 	# define the model
+#     model = RandomForestRegressor()
+# 	# define search space
+#     space = dict()
+#     space['n_estimators'] = [500]
+#     space['min_samples_split'] = [5]
+#     # define search
+#     search = GridSearchCV(model, space, scoring='r2', cv=cv_inner, refit=True)
+# 	# execute search
+#     result = search.fit(X_train, y_train)
+# 	# get the best performing model fit on the whole training set
+#     best_model = result.best_estimator_
+# 	# evaluate model on the hold out dataset
+#     yhat = best_model.predict(X_test)
+# 	# evaluate the model
+#     acc = r2_score(y_test, yhat)
+#     # store the result
+#     outer_results.append(acc)
+#     # report progress
+#     print('>R2=%.3f, est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_))
+# # summarize the estimated performance of the model
+# print('R2_score: %.3f (%.3f)' % (mean(outer_results), std(outer_results)))
 
