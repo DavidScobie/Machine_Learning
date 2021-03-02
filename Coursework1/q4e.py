@@ -95,6 +95,7 @@ print(R2_34_test)
 
 # response: BRAAK1_SUVR
 response = traindata['BRAAK1_SUVR']
+test_response = testdata['BRAAK1_SUVR']
 cv_outer = KFold(n_splits=10)
 outer_results = list()
 for train_ix, test_ix in cv_outer.split(scale_feat):
@@ -146,6 +147,7 @@ print(R2_1_test)
 
 # response: BRAAK2_SUVR
 response = traindata['BRAAK2_SUVR']
+test_response = testdata['BRAAK2_SUVR']
 cv_outer = KFold(n_splits=10)
 outer_results = list()
 for train_ix, test_ix in cv_outer.split(scale_feat):
@@ -198,6 +200,7 @@ print(R2_2_test)
 
 # response: BRAAK56_SUVR
 response = traindata['BRAAK56_SUVR']
+test_response = testdata['BRAAK56_SUVR']
 cv_outer = KFold(n_splits=10)
 outer_results = list()
 for train_ix, test_ix in cv_outer.split(scale_feat):
