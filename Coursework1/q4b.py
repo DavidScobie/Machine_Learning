@@ -80,12 +80,12 @@ ax.plot(seas,avg_rbf_cv,label='rbf')
 plt.xscale('log') 
 plt.xlabel('C')
 plt.ylabel('performance')
-plt.title('Kernel performance')
+plt.title('Cross validation')
 ax.legend()
 
 
 #train linear, poly and RBF kernels SVR with different C's, and apply training data to it to get performance plot.
-no_Cs = 10
+no_Cs = 50
 seas = np.logspace(-6,0,base=10,num=no_Cs)
 R2_lin = []
 R2_poly = []
@@ -151,7 +151,7 @@ ax.legend()
 print('ho')
 
 #train linear, poly and RBF kernels SVR with different C's, and apply test data to it to get performance plot.
-no_Cs = 10
+no_Cs = 50
 seas = np.logspace(-6,0,base=10,num=no_Cs)
 R2_lin_test = []
 R2_poly_test = []
@@ -223,35 +223,4 @@ plt.show()
 
 
 
-# #train a polynomial kernel SVR
-# poly_regr = SVR(kernel='poly',degree=3)
-# poly_regr.fit(np.array(scale_feat),np.array(response))
-
-# Ypred_poly_train=[]
-# rowy=[]
-# for i in range (len(traindata)):
-#     for j in range (len(inputs_list)):
-#         rowy.append([scale_feat[inputs_list[j]][i]])
-#     flat_list = [item for sublist in rowy for item in sublist]
-#     Ypred_poly_train.append(poly_regr.predict([flat_list]))
-#     rowy=[]
-
-# traindata['YPred_poly']=Ypred_poly_train
-# # print(traindata['YPred_poly'])
-
-# #train an rbf kernel SVR
-# rbf_regr = SVR(kernel='rbf')
-# rbf_regr.fit(np.array(scale_feat),np.array(response))
-
-# Ypred_rbf_train=[]
-# rowy=[]
-# for i in range (len(traindata)):
-#     for j in range (len(inputs_list)):
-#         rowy.append([scale_feat[inputs_list[j]][i]])
-#     flat_list = [item for sublist in rowy for item in sublist]
-#     Ypred_rbf_train.append(rbf_regr.predict([flat_list]))
-#     rowy=[]
-
-# traindata['YPred_rbf']=Ypred_rbf_train
-# print(traindata['YPred_rbf'])
 

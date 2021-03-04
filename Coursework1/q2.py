@@ -56,7 +56,7 @@ for Lambda in Lambdas:
 
 # plt.scatter(x,y)
 
-plt.figure(3)
+plt.figure(2)
 Lambda = 100000
 beta = gradient_descent(y, x, beta=[-1,0.5], alpha = 1, epsilon=1e-10, maxiter=10000, Lam=Lambda)
 print(beta)
