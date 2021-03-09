@@ -7,7 +7,8 @@ from sklearn.metrics import mean_squared_error
 from numpy.linalg import inv
 from mpl_toolkits.mplot3d import axes3d
 from mpl_toolkits.mplot3d import Axes3D
-
+from mpl_toolkits import mplot3d
+import matplotlib as mpl
 #a
 
 
@@ -205,7 +206,6 @@ cov_inv = inv(covar)
 CN_Dementia_orth = np.matmul(cov_inv,np.transpose(CN_mu-Dementia_mu))
 CN_MCI_orth = np.matmul(cov_inv,np.transpose(CN_mu-MCI_mu))
 Dementia_MCI_orth = np.matmul(cov_inv,np.transpose(Dementia_mu-MCI_mu))
-print(Dementia_MCI_orth)
 
 #finding midpoints
 CN_Dementia_mid = (CN_mu+Dementia_mu)/2
@@ -236,9 +236,13 @@ xx, yy = np.meshgrid(range(10), range(10))
 
 z = (-normal[0] * xx - normal[1] * yy - d) * 1. / normal[2]
 
-plt3d = plt.figure().gca(projection='3d')
-plt3d.plot_surface(xx, yy, z)
-plt3d.set(xlabel='ABETA', ylabel='TAU', zlabel='ABETA*TAU')
+
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+
+ax = plt.figure().gca(projection='3d')
+ax.plot_surface(xx, yy, z)
+ax.set(xlabel='ABETA', ylabel='TAU', zlabel='ABETA*TAU')
 
 #plotting CN MCI
 points = [[-2.6, 0.1, 4],
@@ -264,7 +268,7 @@ xx, yy = np.meshgrid(range(10), range(10))
 
 z = (-normal[0] * xx - normal[1] * yy - d) * 1. / normal[2]
 
-plt3d.plot_surface(xx, yy, z)
+ax.plot_surface(xx, yy, z)
 
 #plotting Dementia MCI
 points = [[9.8, -1.6, 4],
@@ -290,13 +294,14 @@ xx, yy = np.meshgrid(range(10), range(10))
 
 z = (-normal[0] * xx - normal[1] * yy - d) * 1. / normal[2]
 
-plt3d.plot_surface(xx, yy, z)
+ax.plot_surface(xx, yy, z)
 
 #plotting the underlying points
-plt3d.scatter(CN_3_features[:,0],CN_3_features[:,1],CN_3_features[:,2])
-plt3d.scatter(Dementia_3_features[:,0],Dementia_3_features[:,1],Dementia_3_features[:,2])
-plt3d.scatter(MCI_3_features[:,0],MCI_3_features[:,1],MCI_3_features[:,2])
+ax.scatter(CN_3_features[:,0],CN_3_features[:,1],CN_3_features[:,2])
+ax.scatter(Dementia_3_features[:,0],Dementia_3_features[:,1],Dementia_3_features[:,2])
+ax.scatter(MCI_3_features[:,0],MCI_3_features[:,1],MCI_3_features[:,2])
 
+ax.legend()
 plt.show()
 
 
