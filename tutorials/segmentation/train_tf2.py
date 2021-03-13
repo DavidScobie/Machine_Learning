@@ -9,7 +9,7 @@ import numpy as np
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 path_to_data = './data/datasets-promise12'
-path_to_save = './result' 
+RESULT_PATH = './result' 
 
 ## Define functions for network layers
 def conv3d(input, filters, downsample=False, activation=True, batch_norm=False):
@@ -202,8 +202,13 @@ for step in range(total_iter):
         input_test = DataFeeder.load_images_test(indices_test)
         pred_test = residual_unet(input_test)
         for idx in range(size_minibatch):
-            filepath_to_save = os.path.join(path_to_save, "label_test%02d_step%06d-tf.npy" % (indices_test[idx], step1))
+            filepath_to_save = os.path.join(RESULT_PATH, "label_test%02d_step%06d-tf.npy" % (indices_test[idx], step1))
             np.save(filepath_to_save, tf.squeeze(pred_test[idx, ...]))
             tf.print('Test data saved: {}'.format(filepath_to_save))
 
 print('Training done.')
+
+
+## save trained model
+tf.saved_model.save(residual_unet, os.path.join(RESULT_PATH,'saved_model_tf'))  # https://www.tensorflow.org/api_docs/python/tf/saved_model/
+print('Model saved.')

@@ -92,5 +92,5 @@ print('Training done.')
 
 
 ## save trained model
-torch.save(model, os.path.join(RESULT_PATH,'saved_model_pt'))
+torch.save(model, os.path.join(RESULT_PATH,'saved_model_pt'))  # https://pytorch.org/tutorials/beginner/saving_loading_models.html
 print('Model saved.')

@@ -165,3 +165,8 @@ while step < total_steps:
                 print('Test data saved: {}'.format(filepath_to_save))
 
 print('Training done.')
+
+
+## save trained model
+torch.save(model, os.path.join(RESULT_PATH,'saved_model_pt'))  # https://pytorch.org/tutorials/beginner/saving_loading_models.html
+print('Model saved.')
