@@ -9,6 +9,7 @@ import h5py
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 use_cuda = torch.cuda.is_available()
 filename = './data/ultrasound_50frames.h5'
+RESULT_PATH = './result'
 
 ## build a vgg-16 network class
 class VGGNet(torch.nn.Module):
@@ -88,3 +89,8 @@ for epoch in range(200):
             moving_loss = 0.0
 
 print('Training done.')
+
+
+## save trained model
+torch.save(model, os.path.join(RESULT_PATH,'saved_model_pt'))
+print('Model saved.')

@@ -80,5 +80,6 @@ dataset_batch = dataset.shuffle(buffer_size=1024).batch(32)
 model.fit(dataset_batch, epochs=int(1e3))
 print('Training done.')
 
+## save trained model
 model.save(os.path.join(RESULT_PATH,'saved_model_tf'))
 print('Model saved.')
