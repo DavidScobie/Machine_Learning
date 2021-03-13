@@ -5,6 +5,8 @@ import random
 import tensorflow as tf
 
 
+RESULT_PATH = './result'
+
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 filename = './data/ultrasound_50frames.h5'
 frame_size = tf.keras.utils.HDF5Matrix(filename, '/frame_size').data.value
@@ -77,3 +79,6 @@ dataset = tf.data.Dataset.from_generator(generator = data_generator,
 dataset_batch = dataset.shuffle(buffer_size=1024).batch(32)
 model.fit(dataset_batch, epochs=int(1e3))
 print('Training done.')
+
+model.save(os.path.join(RESULT_PATH,'saved_model_tf'))
+print('Model saved.')
