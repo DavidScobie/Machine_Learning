@@ -9,8 +9,8 @@ import tf_utils as utils
 from np_utils import get_image_arrays
 
 
-os.environ["CUDA_VISIBLE_DEVICES"]="2"
-PATH_TO_RESULT = 'result'
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+RESULT_PATH = 'result'
 
 
 ## read all the data
@@ -83,9 +83,13 @@ for step in range(total_iterations):
             mov_images=tf.convert_to_tensor(test_images[test_indices[0],...]),
             fix_images=tf.convert_to_tensor(test_images[test_indices[1],...]))
         print('*** Test *** Step %d: Loss=%f (similarity=%f, regulariser=%f)' % (step, loss_test, loss_sim_test, loss_reg_test))
-        filepath_to_save = os.path.join(PATH_TO_RESULT, "test_step%06d-tf.npy" % step)
+        filepath_to_save = os.path.join(RESULT_PATH, "test_step%06d-tf.npy" % step)
         np.save(filepath_to_save, pre_images_test)
         tf.print('Test data saved: {}'.format(filepath_to_save))
 
 print('Training done.')
-        
+
+
+## save trained model
+reg_net.save(os.path.join(RESULT_PATH,'saved_model_tf'))  # https://www.tensorflow.org/guide/keras/save_and_serialize
+print('Model saved.')

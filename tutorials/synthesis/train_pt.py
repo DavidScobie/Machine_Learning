@@ -134,3 +134,10 @@ for epoch in range(num_epochs):
             predictions = netG(fixed_noise).detach().cpu().numpy()
             utils.save_images(predictions, os.path.join(RESULT_PATH,'images{:04d}-pt'.format(epoch+1)))
             print('Test images saved.')
+
+print('Training done.')
+
+
+## save trained model
+torch.save(netG, os.path.join(RESULT_PATH,'saved_generator_pt'))  # https://pytorch.org/tutorials/beginner/saving_loading_models.html
+print('Generator saved.')

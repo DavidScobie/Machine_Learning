@@ -106,3 +106,10 @@ for epoch in range(num_epochs):
         predictions = generator(seed, training=False)
         utils.save_images(predictions, os.path.join(RESULT_PATH,'images{:04d}-tf'.format(epoch+1)))
         print('Test images saved.')
+
+print('Training done.')
+
+
+## save trained model
+generator.save(os.path.join(RESULT_PATH,'saved_generator_tf'))  # https://www.tensorflow.org/guide/keras/save_and_serialize
+print('Generator saved.')

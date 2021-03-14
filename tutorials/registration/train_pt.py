@@ -11,7 +11,7 @@ from np_utils import get_image_arrays
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 use_cuda = torch.cuda.is_available()
-PATH_TO_RESULT = 'result'
+RESULT_PATH = 'result'
 
 
 ## read all the data
@@ -85,10 +85,13 @@ for step in range(total_iterations):
         loss_test = loss_sim_test + loss_reg_test*weight_regulariser
 
         print('*** Test *** Step %d: Loss=%f (similarity=%f, regulariser=%f)' % (step, loss_test, loss_sim_test, loss_reg_test))
-        filepath_to_save = os.path.join(PATH_TO_RESULT, "test_step%06d-pt.npy" % step)
+        filepath_to_save = os.path.join(RESULT_PATH, "test_step%06d-pt.npy" % step)
         np.save(filepath_to_save, pre_images_test.detach().cpu().numpy())
         print('Test data saved: {}'.format(filepath_to_save))
 
 print('Training done.')
 
-        
+
+## save trained model
+torch.save(reg_net, os.path.join(RESULT_PATH,'saved_model_pt'))  # https://pytorch.org/tutorials/beginner/saving_loading_models.html
+print('Model saved.')
