@@ -167,8 +167,8 @@ def train_step(model, weights, optimizer, x, y):
 # optimisation configuration
 learning_rate = 1e-4
 total_iter = int(2e5)
-freq_print = 100  # in epoch
-freq_test = 2000  # in epoch
+freq_print = 100  # in iteration
+freq_test = 2000  # in iteration
 n = 50  # 50 training image-label pairs
 size_minibatch = 4
 
@@ -209,6 +209,4 @@ for step in range(total_iter):
 print('Training done.')
 
 
-## save trained model
-tf.saved_model.save(residual_unet, os.path.join(RESULT_PATH,'saved_model_tf'))  # https://www.tensorflow.org/api_docs/python/tf/saved_model/
-print('Model saved.')
+## this tutorial does not save residule_net, see e.g. https://www.tensorflow.org/api_docs/python/tf/saved_model/
