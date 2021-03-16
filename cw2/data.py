@@ -9,11 +9,10 @@ import matplotlib.pyplot as plt
 
 
 filename = 'dataset70-200.h5'
-num_case_plots = 10
 
 
 ## download data
-print('Downloading and extracting data...')
+print('Downloading data...')
 url = 'https://weisslab.cs.ucl.ac.uk/WEISSTeaching/datasets/raw/trus2d/' + filename
 r = requests.get(url,allow_redirects=True)
 _ = open(filename,'wb').write(r.content)
@@ -24,11 +23,14 @@ print('Image and label data downloaded: %s' % filename)
 h5_file = h5py.File(filename,'r')
 num_cases = len(set([k.split('_')[1] for k in h5_file.keys()]))
 
-print('{:d} cases with a total of {:d} frames and {:d} labels found.'.format(
+print('  with {:d} cases with a total of {:d} frames and {:d} labels.'.format(
     num_cases,
     len([k for k in h5_file.keys() if k.split('_')[0]=='frame']),
     len([k for k in h5_file.keys() if k.split('_')[0]=='label'])))
 
+
+print('\nHow many example frames would you like to visualise, e.g. 10?')
+num_case_plots = int(input())
 
 ## plot a few examples
 for _ in range(num_case_plots):
