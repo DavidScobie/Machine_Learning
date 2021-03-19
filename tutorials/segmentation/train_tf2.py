@@ -9,7 +9,7 @@ import numpy as np
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 path_to_data = './data/datasets-promise12'
-RESULT_PATH = './result' 
+path_to_save = './result' 
 
 ## Define functions for network layers
 def conv3d(input, filters, downsample=False, activation=True, batch_norm=False):
@@ -21,7 +21,10 @@ def conv3d(input, filters, downsample=False, activation=True, batch_norm=False):
     return y  # where bn can be added
 
 def resnet_block(input, filters, batch_norm=False):
-    y = conv3d(input, filters[..., 0])
+    # if size(filters) = (3,3,3,32,32,2)
+    # then filters[..., 0] = (3,3,3,32,32)
+    # and filters[..., 1] = (3,3,3,32,32)
+    y = conv3d(input, filters[..., 0]) 
     y = conv3d(y, filters[..., 1], activation=False) + input
     if batch_norm: y = batch_norm(y)
     return tf.nn.relu(y)  # where bn can be added
@@ -50,7 +53,7 @@ def add_variable(var_shape, var_list, var_name=None, initialiser=None):
 ## Define a model (a 3D U-Net variant) with residual layers with trinable weights
 # ref: https://arxiv.org/abs/1512.03385  & https://arxiv.org/abs/1505.04597
 num_channels = 32
-nc = [num_channels*(2**i) for i in range(4)]
+nc = [num_channels*(2**i) for i in range(4)] # 32 64 128 256
 var_list=[]
 # intial-layer
 var_list = add_variable([5,5,5,1,nc[0]], var_list)
@@ -74,9 +77,9 @@ var_list = add_variable([3,3,3,nc[3],nc[3],2], var_list)
 var_list = add_variable([3,3,3,nc[3],nc[3],2], var_list)
 var_list = add_variable([3,3,3,nc[3],nc[3],2], var_list)
 # decoder-s2
-var_list = add_variable([3,3,3,nc[2],nc[3]], var_list)
+var_list = add_variable([3,3,3,nc[2],nc[3]], var_list) # 16 ( 3, 3, 3, 128, 256)
 var_list = add_variable([3,3,3,nc[2],nc[2],2], var_list)
-var_list = add_variable([3,3,3,nc[2],nc[2],2], var_list)
+var_list = add_variable([3,3,3,nc[2],nc[2],2], var_list) 
 # decoder-s1
 var_list = add_variable([3,3,3,nc[1],nc[2]], var_list)
 var_list = add_variable([3,3,3,nc[1],nc[1],2], var_list)
@@ -86,58 +89,62 @@ var_list = add_variable([3,3,3,nc[0],nc[1]], var_list)
 var_list = add_variable([3,3,3,nc[0],nc[0],2], var_list)
 var_list = add_variable([3,3,3,nc[0],nc[0],2], var_list)
 # output-layer
-var_list = add_variable([3,3,3,nc[0],1], var_list)
+var_list = add_variable([3,3,3,nc[0],1], var_list) # 25 ( 3,3,3,32,1)
 
 ## model with corresponding layers
 @tf.function
 def residual_unet(input):
     # initial-layer
     skip_layers = []
-    layer = conv3d(input, var_list[0])
+    layer = conv3d(input, var_list[0])  # (4, 16, 64, 64, 32)
     # encoder-s0
     layer = resnet_block(layer, var_list[1])
     layer = resnet_block(layer, var_list[2])
     skip_layers.append(layer)
     layer = downsample_maxpool(layer, var_list[3])
-    layer = conv3d(layer, var_list[4])
+    layer = conv3d(layer, var_list[4])  # (4, 16, 64, 64, 64)
     # encoder-s1
     layer = resnet_block(layer, var_list[5])
     layer = resnet_block(layer, var_list[6])
     skip_layers.append(layer)
     layer = downsample_maxpool(layer, var_list[7])
-    layer = conv3d(layer, var_list[8])
+    layer = conv3d(layer, var_list[8]) # (4, 16, 64, 64, 128)
     # encoder-s2
     layer = resnet_block(layer, var_list[9])
     layer = resnet_block(layer, var_list[10])
     skip_layers.append(layer)
     layer = downsample_maxpool(layer, var_list[11])
-    layer = conv3d(layer, var_list[12])
+    layer = conv3d(layer, var_list[12]) # (4, 16, 64, 64, 256)
     # deep-layers-s3
     layer = resnet_block(layer, var_list[13])
     layer = resnet_block(layer, var_list[14])
-    layer = resnet_block(layer, var_list[15])
+    layer = resnet_block(layer, var_list[15]) # (4, 16, 64, 64, 256)
     # decoder-s2
     layer = deconv3d(layer, var_list[16], skip_layers[2].shape) + skip_layers[2]
     layer = resnet_block(layer, var_list[17])
-    layer = resnet_block(layer, var_list[18])
+    layer = resnet_block(layer, var_list[18]) # (4, 16, 64, 64, 128)
     # decoder-s1
     layer = deconv3d(layer, var_list[19], skip_layers[1].shape) + skip_layers[1]
     layer = resnet_block(layer, var_list[20])
-    layer = resnet_block(layer, var_list[21])
+    layer = resnet_block(layer, var_list[21]) # (4, 16, 64, 64, 64)
     # decoder-s0
     layer = deconv3d(layer, var_list[22], skip_layers[0].shape) + skip_layers[0]
     layer = resnet_block(layer, var_list[23])
-    layer = resnet_block(layer, var_list[24])
+    layer = resnet_block(layer, var_list[24])  # (4, 16, 64, 64, 32)
     # output-layer
-    layer = tf.sigmoid(conv3d(layer, var_list[25], activation=False))
+    layer = conv3d(layer, var_list[25], activation=False) # (4, 16, 64, 64, 1)
+    layer = tf.sigmoid(layer)
     return layer
 
 ## loss function
 def loss_dice(pred, target, eps=1e-6):
+    # pred * target because 0 * 0  = 0 and 0 * 1 = 0 . It only counts overlap when 1 *1 
     dice_numerator = 2 * tf.reduce_sum(pred*target, axis=[1,2,3,4])
     dice_denominator = eps + tf.reduce_sum(pred, axis=[1,2,3,4]) + tf.reduce_sum(target, axis=[1,2,3,4])
     return  1 - tf.reduce_mean(dice_numerator/dice_denominator)
 
+# [N_batches, z, x, y]
+# take the mean over 4
 
 ## npy data loader class
 class DataReader:
@@ -166,9 +173,12 @@ def train_step(model, weights, optimizer, x, y):
 
 # optimisation configuration
 learning_rate = 1e-4
-total_iter = int(2e5)
-freq_print = 100  # in iteration
-freq_test = 2000  # in iteration
+# total_iter = int(2e5)
+total_iter = int(10)
+# freq_print = 100  # in epoch
+freq_print = 2
+# freq_test = 2000  # in epoch
+freq_test = 3
 n = 50  # 50 training image-label pairs
 size_minibatch = 4
 
@@ -177,7 +187,7 @@ indices_train = [i for i in range(n)]
 DataFeeder = DataReader(path_to_data)
 optimizer = tf.optimizers.Adam(learning_rate)
 for step in range(total_iter):
-
+    print(step)
     # shuffle data every time start a new set of minibatches
     if step in range(0, total_iter, num_minibatch):
         random.shuffle(indices_train)
@@ -185,9 +195,11 @@ for step in range(total_iter):
     # find out data indices for a minibatch
     minibatch_idx = step % num_minibatch  # minibatch index
     indices_mb = indices_train[minibatch_idx*size_minibatch:(minibatch_idx+1)*size_minibatch]
+
     # halve image size so this can be reasonably tested, e.g. on a CPU
     input_mb = DataFeeder.load_images_train(indices_mb)
     label_mb = DataFeeder.load_labels_train(indices_mb)
+
     # update the variables
     loss_train = train_step(residual_unet, var_list, optimizer, input_mb, label_mb)
 
@@ -202,11 +214,8 @@ for step in range(total_iter):
         input_test = DataFeeder.load_images_test(indices_test)
         pred_test = residual_unet(input_test)
         for idx in range(size_minibatch):
-            filepath_to_save = os.path.join(RESULT_PATH, "label_test%02d_step%06d-tf.npy" % (indices_test[idx], step1))
+            filepath_to_save = os.path.join(path_to_save, "label_test%02d_step%06d-tf.npy" % (indices_test[idx], step1))
             np.save(filepath_to_save, tf.squeeze(pred_test[idx, ...]))
             tf.print('Test data saved: {}'.format(filepath_to_save))
 
 print('Training done.')
-
-
-## this tutorial does not save residule_net, see e.g. https://www.tensorflow.org/api_docs/python/tf/saved_model/
