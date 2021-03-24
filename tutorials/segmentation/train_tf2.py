@@ -174,7 +174,7 @@ def train_step(model, weights, optimizer, x, y):
 # optimisation configuration
 learning_rate = 1e-4
 # total_iter = int(2e5)
-total_iter = int(10)
+total_iter = int(2)
 # freq_print = 100  # in epoch
 freq_print = 2
 # freq_test = 2000  # in epoch
