@@ -1,6 +1,6 @@
 import os
 import random
-
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np 
 
@@ -15,22 +15,46 @@ frame1 = tf.transpose(tf.keras.utils.HDF5Matrix(filename, 'frame_0004_003' )) / 
 print(frame1)
 # print(tf.math.reduce_max(frame1))
 
+#image a slice
+img = tf.image.convert_image_dtype(frame1, tf.float32)
+print(np.shape(img))
+plt.imshow(img)
+
 ##MY DATA GENERATOR
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
         idx_frame = 3
-        dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-        print(dataset)
-        # print('hi')
-        frame = tf.transpose(tf.keras.utils.HDF5Matrix(filename, dataset)) / 255
-        print(frame)
-        # # yield (tf.expand_dims(frame, axis=2), label)
-        # yield frame
+        f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
+        frame = tf.keras.utils.HDF5Matrix(filename, f_dataset) / 255
+        l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
+        label1 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
+        l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
+        label2 = tf.keras.utils.HDF5Matrix(filename, l1_dataset)
+        l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
+        label3 = tf.keras.utils.HDF5Matrix(filename, l2_dataset)
+        stacked = tf.stack([frame,label1,label2,label3],axis = 2)
+        # print(stacked)
+        # yield (tf.expand_dims(frame, axis=2), label)
+        yield stacked
 
-subject_indicies = np.array([4,6,77])
+subject_indices = range(num_subjects)
+# subject_indicies = np.array([4])
 training_dataset = my_data_generator(subject_indicies)
 print(training_dataset)
+frame_size = np.array([52,58])
 
+dataset = tf.data.Dataset.from_generator(generator = my_data_generator, 
+                                         output_types = (tf.float32, tf.int32),
+                                         output_shapes = (frame_size+[1], ()))
+print(dataset)                                
+
+
+# plt.show()
+
+
+# dataset = tf.data.Dataset.from_generator(generator = my_data_generator, 
+#                                          output_types = (tf.float32, tf.int32),
+#                                          output_shapes = (frame_size+[1], ()))
 
 
 ## DATA GENERATOR FROM CLASSIFICATION (h5 FILES)
