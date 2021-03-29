@@ -1,7 +1,9 @@
 # This is part of the tutorial materials in the UCL Module MPHY0041: Machine Learning in Medical Imaging
 import os
 import random
-
+import h5py
+f = h5py.File('./data/dataset70-200.h5','r')
+keys = f.keys()
 import tensorflow as tf
 
 
@@ -12,22 +14,35 @@ filename = './data/ultrasound_50frames.h5'
 frame_size = tf.keras.utils.HDF5Matrix(filename, '/frame_size').data.value
 frame_size = [frame_size[0][0],frame_size[1][0]]
 num_classes = tf.keras.utils.HDF5Matrix(filename, '/num_classes').data.value[0][0]
+print(frame_size+[1])
+print(num_classes)
 
 ## build the network layers
-features_input = tf.keras.Input(shape=frame_size+[1])
-features = tf.keras.layers.Conv2D(32, 7, activation='relu')(features_input)
+features_input = tf.keras.Input(shape=frame_size+[1]) # add 1 channel because it is black or white shape=(None, 92, 128, 1)
+print(features_input)
+features = tf.keras.layers.Conv2D(32, 7, activation='relu')(features_input) #32 filters and 7x7 kernel size. Makes it (None, 86,122,32) because we haven't padded
+print(features)
 
-features = tf.keras.layers.MaxPool2D(3)(features)
-features_block_1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(features)
+features = tf.keras.layers.MaxPool2D(3)(features) # window (or kernel) that it looks in is 3x3. Features size is now (None, 28, 40, 32) because 1/3 of the size
+print(features)
+
+features_block_1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(features) # size (None, 26, 38, 64)
+print(features_block_1)
+
 features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_1)
-features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
-features_block_2 = features + features_block_1
+features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features) # size (None, 26, 38, 64)
+features_block_2 = features + features_block_1 #Adding layers to make the architecture
+
 features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_2)
 features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
 features = features + features_block_2
 
-features = tf.keras.layers.MaxPool2D(3)(features)
-features_block_3 = tf.keras.layers.Conv2D(128, 3, activation='relu')(features)
+features = tf.keras.layers.MaxPool2D(3)(features) # shape=(None, 8, 12, 64)
+print(features)
+
+features_block_3 = tf.keras.layers.Conv2D(128, 3, activation='relu')(features) # shape=(None, 6, 10, 128)
+print(features_block_3)
+
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_3)
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
 features_block_4 = features + features_block_3
@@ -39,17 +54,27 @@ features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(fea
 features_block_6 = features + features_block_5
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_6)
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
-features = features + features_block_6
+features = features + features_block_6 # shape=(None, 6, 10, 128)
 
-features = tf.keras.layers.Conv2D(128, 3, activation='relu')(features)
-features = tf.keras.layers.GlobalAveragePooling2D()(features)
-features = tf.keras.layers.Dense(units=256, activation='relu')(features)
-features = tf.keras.layers.Dropout(0.5)(features)
+features = tf.keras.layers.Conv2D(128, 3, activation='relu')(features) # shape=(None, 4, 8, 128)
+print(features)
+
+features = tf.keras.layers.GlobalAveragePooling2D()(features) # shape=(None, 128) because batch size = 1 and 128 channels
+print(features)
+
+features = tf.keras.layers.Dense(units=256, activation='relu')(features) # shape=(None, 256)
+print(features)
+
+features = tf.keras.layers.Dropout(0.5)(features) # shape=(None, 256)
+print(features)
+
 logits_output = tf.keras.layers.Dense(units=num_classes, activation='softmax')(features)
+print(logits_output)
 
 ## compile the model
 model = tf.keras.Model(inputs=features_input, outputs=logits_output)
 model.summary()
+
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
               loss='sparse_categorical_crossentropy',
               metrics=['SparseCategoricalAccuracy'])
@@ -84,3 +109,4 @@ print('Training done.')
 ## save trained model
 # model.save(os.path.join(RESULT_PATH,'saved_model_tf'))  # https://www.tensorflow.org/guide/keras/save_and_serialize
 # print('Model saved.')
+

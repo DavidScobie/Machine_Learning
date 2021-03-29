@@ -3,13 +3,22 @@ import random
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np 
+import h5py
+f = h5py.File('./data/dataset70-200.h5','r')
+keys = f.keys()
 
 num_subjects = 200
 filename = './data/dataset70-200.h5'
 subject_indicies = range(num_subjects)
 num_frames_per_subject = 1 #In reality it is average of 27 per person
-# dataset = '/subject%06d_frame%08d' % (iSbj, idx_frame)
+# dataset = '/subject%04d_frame%03d' % (iSbj, idx_frame)
 # frame = tf.transpose(tf.keras.utils.HDF5Matrix(filename, dataset)) / 255
+idx_frame = 1
+iSbj = 1
+f_dataset = 'frame_%04d_%03d' % (iSbj,idx_frame)
+print(f_dataset)
+frame = tf.keras.utils.HDF5Matrix(filename, f_dataset)
+print(frame)
 
 frame1 = tf.transpose(tf.keras.utils.HDF5Matrix(filename, 'frame_0004_003' )) / 255
 print(frame1)
@@ -17,38 +26,41 @@ print(frame1)
 
 #image a slice
 img = tf.image.convert_image_dtype(frame1, tf.float32)
-print(np.shape(img))
+# print(np.shape(img))
 plt.imshow(img)
 
 ##MY DATA GENERATOR
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
-        idx_frame = 3
-        f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-        frame = tf.keras.utils.HDF5Matrix(filename, f_dataset) / 255
-        l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
-        label1 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
-        l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
-        label2 = tf.keras.utils.HDF5Matrix(filename, l1_dataset)
-        l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
-        label3 = tf.keras.utils.HDF5Matrix(filename, l2_dataset)
-        stacked = tf.stack([frame,label1,label2,label3],axis = 2)
-        # print(stacked)
-        # yield (tf.expand_dims(frame, axis=2), label)
-        yield stacked
+        relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
+        idx_frame_indics = range(len(relevant_keys))
+        for idx_frame in idx_frame_indics:
+            f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
+            frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset),255)
+            l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
+            label1 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
+            l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
+            label2 = tf.keras.utils.HDF5Matrix(filename, l1_dataset)
+            l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
+            label3 = tf.keras.utils.HDF5Matrix(filename, l2_dataset)
+            stacked = tf.stack([frame,label1,label2,label3],axis = 2)
+            # print('hjds')
+            # print(tf.shape(stacked))
+            # yield (tf.expand_dims(frame, axis=2), label)
+            yield stacked
 
 subject_indices = range(num_subjects)
-# subject_indicies = np.array([4])
+# subject_indicies = np.array([1])
 training_dataset = my_data_generator(subject_indicies)
-print(training_dataset)
+# print(training_dataset)
 frame_size = np.array([52,58])
 
 dataset = tf.data.Dataset.from_generator(generator = my_data_generator, 
                                          output_types = (tf.float32, tf.int32),
                                          output_shapes = (frame_size+[1], ()))
-print(dataset)                                
 
-
+# print(dataset)                                
+# print(frame)
 # plt.show()
 
 
