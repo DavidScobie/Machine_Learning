@@ -60,7 +60,7 @@ var_list = add_variable([5,5,5,1,nc[0]], var_list)
 # encoder-s0
 var_list = add_variable([3,3,3,nc[0],nc[0],2], var_list)
 var_list = add_variable([3,3,3,nc[0],nc[0],2], var_list)
-var_list = add_variable([3,3,3,nc[0],nc[0]], var_list)
+var_list = add_variable([3,3,3,nc[0],nc[0]], var_list) #var_list[3]
 var_list = add_variable([3,3,3,nc[0],nc[1]], var_list)
 # encoder-s1
 var_list = add_variable([3,3,3,nc[1],nc[1],2], var_list)
