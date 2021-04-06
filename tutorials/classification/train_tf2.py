@@ -2,8 +2,6 @@
 import os
 import random
 import h5py
-f = h5py.File('./data/dataset70-200.h5','r')
-keys = f.keys()
 import tensorflow as tf
 
 
@@ -11,6 +9,11 @@ RESULT_PATH = './result'
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 filename = './data/ultrasound_50frames.h5'
+
+# f = h5py.File('./data/ultrasound_50frames.h5')
+# keys = f.keys()
+# print(keys)
+
 frame_size = tf.keras.utils.HDF5Matrix(filename, '/frame_size').data.value
 frame_size = [frame_size[0][0],frame_size[1][0]]
 num_classes = tf.keras.utils.HDF5Matrix(filename, '/num_classes').data.value[0][0]
@@ -99,14 +102,14 @@ dataset = tf.data.Dataset.from_generator(generator = data_generator,
                                          output_types = (tf.float32, tf.int32),
                                          output_shapes = (frame_size+[1], ()))
 print(dataset)
-print('WAAAHHHEEEYYYY')
 
 ## training
 dataset_batch = dataset.shuffle(buffer_size=1024).batch(32)
-model.fit(dataset_batch, epochs=int(3))
+model.fit(dataset_batch, epochs=int(1))
 print('Training done.')
 
 ## save trained model
 # model.save(os.path.join(RESULT_PATH,'saved_model_tf'))  # https://www.tensorflow.org/guide/keras/save_and_serialize
 # print('Model saved.')
+
 
