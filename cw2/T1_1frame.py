@@ -20,38 +20,27 @@ plt.imshow(img)
 ##MY DATA GENERATOR
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
-        # relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-        # idx_frame_indics = range(len(relevant_keys))
         idx_frame_indics = range(num_subjects)
         for idx_frame in idx_frame_indics:
             f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
             frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
             l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
-            label1 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
-            l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
-            label2 = tf.keras.utils.HDF5Matrix(filename, l1_dataset)
-            l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
-            label3 = tf.keras.utils.HDF5Matrix(filename, l2_dataset)
-            yield((tf.expand_dims(frame, axis=2), tf.expand_dims(label1, axis=2), tf.expand_dims(label2, axis=2),tf.expand_dims(label3, axis=2)))
+            label0 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
+            yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
 
 dataset = tf.data.Dataset.from_generator(generator = my_data_generator, 
-                                         output_types = (tf.float32, tf.float32, tf.float32, tf.float32),
-                                         output_shapes = (frame_size, frame_size, frame_size, frame_size))
+                                         output_types = (tf.float32, tf.float32),
+                                         output_shapes = (frame_size, frame_size))
 
 print(dataset)
 
-# iSbj = 0
-# idx_frame = 0
-# f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-# frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
-# l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
-# label1 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
-# l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
-# label2 = tf.keras.utils.HDF5Matrix(filename, l1_dataset)
-# l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
-# label3 = tf.keras.utils.HDF5Matrix(filename, l2_dataset)
-# # stck = ((tf.expand_dims(frame, axis=2), label1, label2, label3))
-# print(tf.shape(stck))
+iSbj = 0
+idx_frame = 0
+f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
+frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
+l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
+label0 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
+
 
 # #don't bother with shuffling and batches for now
 # model.fit(dataset, epochs=int(3))
