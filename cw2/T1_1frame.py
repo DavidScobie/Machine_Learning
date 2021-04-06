@@ -10,7 +10,7 @@ filename = './data/dataset70-200.h5'
 subject_indicies = range(num_subjects)
 
 #I think this needs to be by 3 (or maybe 4) as we have a stack of 1 frame and 3 labels in the generator 
-frame_size = np.array([52,58,3])
+frame_size = np.array([52,58,1])
 
 #image a slice
 frame1 = tf.transpose(tf.keras.utils.HDF5Matrix(filename, 'label_0000_000_02' )) / 255
@@ -32,11 +32,29 @@ def my_data_generator(subject_indices):
             label2 = tf.keras.utils.HDF5Matrix(filename, l1_dataset)
             l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
             label3 = tf.keras.utils.HDF5Matrix(filename, l2_dataset)
-            yield((tf.expand_dims(frame, axis=2), label1, label2, label3))
+            yield((tf.expand_dims(frame, axis=2), tf.expand_dims(label1, axis=2), tf.expand_dims(label2, axis=2),tf.expand_dims(label3, axis=2)))
 
 dataset = tf.data.Dataset.from_generator(generator = my_data_generator, 
-                                         output_types = (tf.float32, tf.int32),
-                                         output_shapes = (frame_size, ()))
+                                         output_types = (tf.float32, tf.float32, tf.float32, tf.float32),
+                                         output_shapes = (frame_size, frame_size, frame_size, frame_size))
 
 print(dataset)
-plt.show()
+
+# iSbj = 0
+# idx_frame = 0
+# f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
+# frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
+# l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
+# label1 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
+# l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
+# label2 = tf.keras.utils.HDF5Matrix(filename, l1_dataset)
+# l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
+# label3 = tf.keras.utils.HDF5Matrix(filename, l2_dataset)
+# # stck = ((tf.expand_dims(frame, axis=2), label1, label2, label3))
+# print(tf.shape(stck))
+
+# #don't bother with shuffling and batches for now
+# model.fit(dataset, epochs=int(3))
+# print('Training done.')
+
+# plt.show()

@@ -3,7 +3,7 @@ import os
 import random
 import h5py
 import tensorflow as tf
-
+import matplotlib.pyplot as plt
 
 RESULT_PATH = './result'
 
@@ -102,6 +102,12 @@ dataset = tf.data.Dataset.from_generator(generator = data_generator,
                                          output_types = (tf.float32, tf.int32),
                                          output_shapes = (frame_size+[1], ()))
 print(dataset)
+
+# #image a slice
+# frame1 = tf.transpose(tf.keras.utils.HDF5Matrix(filename, 'subject000004_label00000000' )) / 255
+# img = tf.image.convert_image_dtype(frame1, tf.float32)
+# plt.imshow(img)
+# plt.show()
 
 ## training
 dataset_batch = dataset.shuffle(buffer_size=1024).batch(32)
