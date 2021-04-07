@@ -5,7 +5,10 @@ import tensorflow as tf
 import numpy as np 
 import h5py
 
-num_subjects = 1
+f = h5py.File('./data/dataset70-200.h5','r')
+keys = f.keys()
+
+num_subjects = 20
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -24,7 +27,9 @@ plt.imshow(img)
 ##MY DATA GENERATOR
 def my_data_generator():
     for iSbj in subject_indices:
-        idx_frame_indics = range(num_subjects)
+        # idx_frame_indics = range(num_subjects)
+        relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
+        idx_frame_indics = range(len(relevant_keys))
         for idx_frame in idx_frame_indics:
             f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
             frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
@@ -37,7 +42,7 @@ dataset = tf.data.Dataset.from_generator(generator = my_data_generator,
                                          output_shapes = (frame_size, frame_size))
 
 print(dataset)
-dataset_batch = dataset.shuffle(buffer_size=1024).batch(1)
+dataset_batch = dataset.shuffle(buffer_size=1024).batch(10)
 
 iSbj = 0
 idx_frame = 0
