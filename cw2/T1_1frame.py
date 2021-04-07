@@ -73,7 +73,8 @@ model = tf.keras.Model(inputs=features_input, outputs=features_up_b_2)
 model.summary()
 
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
-              loss='sparse_categorical_crossentropy',
+            #   loss='sparse_categorical_crossentropy',
+              loss = 'MeanSquaredError',
               metrics=['SparseCategoricalAccuracy'])
 
 #don't bother with shuffling and batches for now
