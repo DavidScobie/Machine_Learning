@@ -71,7 +71,7 @@ print(features)
 features = tf.keras.layers.Dropout(0.5)(features) # shape=(None, 256)
 print(features)
 
-logits_output = tf.keras.layers.Dense(units=num_classes, activation='softmax')(features)
+logits_output = tf.keras.layers.Dense(units=num_classes, activation='softmax')(features) # (None, 4)
 print(logits_output)
 
 ## compile the model
@@ -103,14 +103,16 @@ dataset = tf.data.Dataset.from_generator(generator = data_generator,
                                          output_shapes = (frame_size+[1], ()))
 print(dataset)
 
-# #image a slice
-# frame1 = tf.transpose(tf.keras.utils.HDF5Matrix(filename, 'subject000004_label00000000' )) / 255
-# img = tf.image.convert_image_dtype(frame1, tf.float32)
-# plt.imshow(img)
-# plt.show()
+#image a slice
+frame1 = tf.transpose(tf.keras.utils.HDF5Matrix(filename, 'subject000004_frame00000000' )) / 255
+img = tf.image.convert_image_dtype(frame1, tf.float32)
+plt.imshow(img)
+plt.show()
 
 ## training
 dataset_batch = dataset.shuffle(buffer_size=1024).batch(32)
+dataset_batch = dataset.shuffle(buffer_size=376832).batch(32)
+print(dataset_batch)
 model.fit(dataset_batch, epochs=int(1))
 print('Training done.')
 

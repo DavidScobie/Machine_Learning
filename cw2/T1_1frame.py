@@ -7,18 +7,22 @@ import h5py
 
 num_subjects = 1
 filename = './data/dataset70-200.h5'
-subject_indicies = range(num_subjects)
+subject_indices = range(num_subjects)
+
 
 #I think this needs to be by 3 (or maybe 4) as we have a stack of 1 frame and 3 labels in the generator 
-frame_size = np.array([52,58,1])
+frame_size = np.array([58,52,1])
+# frame_size = np.array([1,52,58])
 
 #image a slice
-frame1 = tf.transpose(tf.keras.utils.HDF5Matrix(filename, 'label_0000_000_02' )) / 255
+frame1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0000_000_02' ),255)
+# frame1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0000_000' ),255)
 img = tf.image.convert_image_dtype(frame1, tf.float32)
 plt.imshow(img)
+# plt.show()
 
 ##MY DATA GENERATOR
-def my_data_generator(subject_indices):
+def my_data_generator():
     for iSbj in subject_indices:
         idx_frame_indics = range(num_subjects)
         for idx_frame in idx_frame_indics:
@@ -33,6 +37,7 @@ dataset = tf.data.Dataset.from_generator(generator = my_data_generator,
                                          output_shapes = (frame_size, frame_size))
 
 print(dataset)
+dataset_batch = dataset.shuffle(buffer_size=1024).batch(1)
 
 iSbj = 0
 idx_frame = 0
@@ -63,8 +68,16 @@ print(features_up_b_1)
 features_up_b_2 = tf.keras.layers.Conv2DTranspose(1, 3, activation='sigmoid',padding='SAME')(features_up_b_1) # size (None, 52, 58, 32)
 print(features_up_b_2)
 
-# #don't bother with shuffling and batches for now
-# model.fit(dataset, epochs=int(3))
-# print('Training done.')
+## compile the model
+model = tf.keras.Model(inputs=features_input, outputs=features_up_b_2)
+model.summary()
+
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+              loss='sparse_categorical_crossentropy',
+              metrics=['SparseCategoricalAccuracy'])
+
+#don't bother with shuffling and batches for now
+model.fit(dataset_batch, epochs=int(3))
+print('Training done.')
 
 # plt.show()
