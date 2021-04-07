@@ -98,11 +98,11 @@ def residual_unet(input):
     skip_layers = []
     layer = conv3d(input, var_list[0])  # (4, 16, 64, 64, 32)
     # encoder-s0
-    layer = resnet_block(layer, var_list[1])
-    layer = resnet_block(layer, var_list[2])
-    skip_layers.append(layer)
-    layer = downsample_maxpool(layer, var_list[3])
-    layer = conv3d(layer, var_list[4])  # (4, 16, 64, 64, 64)
+    layer = resnet_block(layer, var_list[1]) # (4, 16, 64, 64, 32)
+    layer = resnet_block(layer, var_list[2]) # (4, 16, 64, 64, 32)
+    skip_layers.append(layer) # (4, 16, 64, 64, 32)
+    layer = downsample_maxpool(layer, var_list[3]) # (4, 8, 32, 32, 32) strides = 2 here, hence the halving of the size in x,y,z
+    layer = conv3d(layer, var_list[4])  # (4, 8, 32, 32, 64)
     # encoder-s1
     layer = resnet_block(layer, var_list[5])
     layer = resnet_block(layer, var_list[6])
@@ -133,7 +133,9 @@ def residual_unet(input):
     layer = resnet_block(layer, var_list[24])  # (4, 16, 64, 64, 32)
     # output-layer
     layer = conv3d(layer, var_list[25], activation=False) # (4, 16, 64, 64, 1)
-    layer = tf.sigmoid(layer)
+    print(layer)
+    layer = tf.sigmoid(layer) # (4, 16, 64, 64, 1)
+    print(layer)
     return layer
 
 ## loss function
