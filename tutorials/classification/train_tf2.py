@@ -107,11 +107,11 @@ print(dataset)
 frame1 = tf.transpose(tf.keras.utils.HDF5Matrix(filename, 'subject000004_frame00000000' )) / 255
 img = tf.image.convert_image_dtype(frame1, tf.float32)
 plt.imshow(img)
-plt.show()
+# plt.show()
 
 ## training
 dataset_batch = dataset.shuffle(buffer_size=1024).batch(32)
-dataset_batch = dataset.shuffle(buffer_size=376832).batch(32)
+# dataset_batch = dataset.shuffle(buffer_size=376832).batch(32)
 print(dataset_batch)
 model.fit(dataset_batch, epochs=int(1))
 print('Training done.')

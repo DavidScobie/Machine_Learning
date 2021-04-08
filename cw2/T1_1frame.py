@@ -8,7 +8,7 @@ import h5py
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 20
+num_subjects = 10
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -25,7 +25,15 @@ plt.imshow(img)
 # plt.show()
 
 ##MY DATA GENERATOR
-def my_data_generator():
+
+validation_split = 0.2
+num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
+num_validation = num_subjects - num_training
+training_indices = range(num_training)
+validation_indices = range(num_training,num_subjects)
+# num_frames_per_subject = 1
+
+def my_data_generator(subject_indices):
     for iSbj in subject_indices:
         # idx_frame_indics = range(num_subjects)
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
@@ -37,12 +45,18 @@ def my_data_generator():
             label0 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
             yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
 
-dataset = tf.data.Dataset.from_generator(generator = my_data_generator, 
+training_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=training_indices), 
                                          output_types = (tf.float32, tf.float32),
                                          output_shapes = (frame_size, frame_size))
 
-print(dataset)
-dataset_batch = dataset.shuffle(buffer_size=1024).batch(10)
+validation_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=validation_indices), 
+                                         output_types = (tf.float32, tf.float32),
+                                         output_shapes = (frame_size, frame_size))
+
+
+# print(dataset)
+training_batch = training_dataset.shuffle(buffer_size=1024).batch(10)
+validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(10)
 
 iSbj = 0
 idx_frame = 0
@@ -83,7 +97,8 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
               metrics=['SparseCategoricalAccuracy'])
 
 #don't bother with shuffling and batches for now
-model.fit(dataset_batch, epochs=int(3))
+history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
+# model.fit(dataset_batch, epochs=int(3))
 print('Training done.')
 
 # plt.show()
