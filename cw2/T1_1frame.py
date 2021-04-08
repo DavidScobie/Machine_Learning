@@ -8,14 +8,13 @@ import h5py
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 10
+num_subjects = 4
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
 
 #I think this needs to be by 3 (or maybe 4) as we have a stack of 1 frame and 3 labels in the generator 
 frame_size = np.array([58,52,1])
-# frame_size = np.array([1,52,58])
 
 #image a slice
 frame1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0000_000_02' ),255)
@@ -26,12 +25,12 @@ plt.imshow(img)
 
 ##MY DATA GENERATOR
 
-validation_split = 0.2
+validation_split = 0.25
 num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
 training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
-# num_frames_per_subject = 1
+test_indices = range(50,51)
 
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
@@ -45,6 +44,17 @@ def my_data_generator(subject_indices):
             label0 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
             yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
 
+def my_test_generator(subject_indices):
+    for iSbj in subject_indices:
+        # idx_frame_indics = range(num_subjects)
+        relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
+        # idx_frame_indics = range(len(relevant_keys))
+        idx_frame_indics= range(1)
+        for idx_frame in idx_frame_indics:
+            f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
+            frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
+            yield(tf.expand_dims(frame, axis=2))
+
 training_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=training_indices), 
                                          output_types = (tf.float32, tf.float32),
                                          output_shapes = (frame_size, frame_size))
@@ -53,17 +63,15 @@ validation_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_
                                          output_types = (tf.float32, tf.float32),
                                          output_shapes = (frame_size, frame_size))
 
+test_dataset = tf.data.Dataset.from_generator(generator = lambda: my_test_generator(subject_indices=test_indices), 
+                                         output_types = (tf.float32),
+                                         output_shapes = (frame_size))
 
-# print(dataset)
-training_batch = training_dataset.shuffle(buffer_size=1024).batch(10)
-validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(10)
 
-iSbj = 0
-idx_frame = 0
-f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
-l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
-label0 = tf.keras.utils.HDF5Matrix(filename, l0_dataset)
+print(training_dataset)
+training_batch = training_dataset.shuffle(buffer_size=1024).batch(4)
+validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(4)
+test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
 
 ## build the network layers
 features_input = tf.keras.Input(shape=frame_size) # add 1 channel because it is black or white shape=(None, 52, 58, 1)
@@ -94,11 +102,19 @@ model.summary()
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
             #   loss='sparse_categorical_crossentropy',
               loss = 'MeanSquaredError',
-              metrics=['SparseCategoricalAccuracy'])
+              metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
 history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
-# model.fit(dataset_batch, epochs=int(3))
 print('Training done.')
 
-# plt.show()
+#try the a frame to test the model
+# test_data = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0050_000' ),255)
+print(test_batch)
+y_pred = model.predict(test_batch)
+print(tf.shape(y_pred))
+
+test_pred = tf.image.convert_image_dtype(y_pred, tf.float32)
+plt.imshow(tf.squeeze(test_pred))
+plt.show()
+
