@@ -48,7 +48,7 @@ print(features_block_3)
 
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_3)
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
-features_block_4 = features + features_block_3
+features_block_4 = features + features_block_3 # This group of 3 lines is a resnet block. Analagous to resnet_block() in segmentation tutorial
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_4)
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
 features_block_5 = features + features_block_4

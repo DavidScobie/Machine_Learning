@@ -88,8 +88,12 @@ print(features)
 features_block_1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(features) # size (None, 50, 56, 64)
 print(features_block_1)
 
+features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_1)
+features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
+features_block_2 = features + features_block_1
+
 #Then we go back up the layers
-features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3)(features_block_1) # size (None, 52, 58, 32)
+features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3)(features_block_2) # size (None, 52, 58, 32)
 print(features_up_b_1)
 
 features_up_b_2 = tf.keras.layers.Conv2DTranspose(1, 3, activation='sigmoid',padding='SAME')(features_up_b_1) # size (None, 52, 58, 32)
@@ -116,4 +120,4 @@ print(tf.shape(y_pred))
 
 test_pred = tf.image.convert_image_dtype(y_pred, tf.float32)
 plt.imshow(tf.squeeze(test_pred))
-plt.show()
+# plt.show()
