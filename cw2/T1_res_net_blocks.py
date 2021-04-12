@@ -77,8 +77,12 @@ test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
 features_input = tf.keras.Input(shape=frame_size) # add 1 channel because it is black or white shape=(None, 52, 58, 1)
 print(features_input)
 
+#Pad with zeros to make nicely divisible shape
+features = tf.keras.layers.ZeroPadding2D(padding=(1, 4))(features_input)
+print(features)
+
 #First we go down the layers
-features = tf.keras.layers.Conv2D(32, 7, activation='relu',padding='SAME')(features_input) #32 filters and 7x7 kernel size. Makes it (None,52,58,32) because we have padded
+features = tf.keras.layers.Conv2D(32, 7, activation='relu',padding='SAME')(features) #32 filters and 7x7 kernel size. Makes it (None,52,58,32) because we have padded
 print(features)
 
 #If you don't specify strides it will default to pool size
@@ -87,6 +91,10 @@ print(features)
 
 features_block_1 = tf.keras.layers.Conv2D(64, 3, activation='relu',padding='SAME')(features) # size (None, 26, 29, 64)
 print(features_block_1)
+
+#Reducing size again
+features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(2, 2),padding='SAME')(features_block_1) # (None,13,15,1) 
+print(features)
 
 # features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_1)
 # features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
@@ -97,7 +105,10 @@ print(features_block_1)
 # features = features + features_block_2
 
 #Then we go back up the layers
-features = tf.keras.layers.UpSampling2D(size=(2, 2))(features_block_1) # (None,52,58,1)
+features = tf.keras.layers.UpSampling2D(size=(2, 2))(features) # (None,30,26,1)
+print(features)
+
+features = tf.keras.layers.UpSampling2D(size=(2, 2))(features) # (None,52,58,1)
 print(features)
 
 features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3,padding='SAME')(features) # size (None, 52, 58, 32)
@@ -106,8 +117,11 @@ print(features_up_b_1)
 features_up_b_2 = tf.keras.layers.Conv2DTranspose(1, 3, activation='sigmoid',padding='SAME')(features_up_b_1) # size (None, 52, 58, 32)
 print(features_up_b_2)
 
+#crop to get correct output shape
+features_end = tf.keras.layers.Cropping2D(cropping=((1, 1), (4, 4)))(features_up_b_2)
+
 ## compile the model
-model = tf.keras.Model(inputs=features_input, outputs=features_up_b_2)
+model = tf.keras.Model(inputs=features_input, outputs=features_end)
 model.summary()
 
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
