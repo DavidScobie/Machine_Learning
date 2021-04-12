@@ -103,34 +103,41 @@ def residual_unet(input):
     skip_layers.append(layer) # (4, 16, 64, 64, 32)
     layer = downsample_maxpool(layer, var_list[3]) # (4, 8, 32, 32, 32) strides = 2 here, hence the halving of the size in x,y,z
     layer = conv3d(layer, var_list[4])  # (4, 8, 32, 32, 64)
+    print(layer)
     # encoder-s1
     layer = resnet_block(layer, var_list[5])
     layer = resnet_block(layer, var_list[6])
     skip_layers.append(layer)
     layer = downsample_maxpool(layer, var_list[7])
-    layer = conv3d(layer, var_list[8]) # (4, 16, 64, 64, 128)
+    layer = conv3d(layer, var_list[8]) # (4, 4, 16, 16, 128)
+    print(layer)
     # encoder-s2
     layer = resnet_block(layer, var_list[9])
     layer = resnet_block(layer, var_list[10])
     skip_layers.append(layer)
     layer = downsample_maxpool(layer, var_list[11])
-    layer = conv3d(layer, var_list[12]) # (4, 16, 64, 64, 256)
+    layer = conv3d(layer, var_list[12]) # (4, 2, 8, 8, 256)
+    print(layer)
     # deep-layers-s3
     layer = resnet_block(layer, var_list[13])
     layer = resnet_block(layer, var_list[14])
-    layer = resnet_block(layer, var_list[15]) # (4, 16, 64, 64, 256)
+    layer = resnet_block(layer, var_list[15]) # (4, 2, 8, 8, 256)
+    print(layer)
     # decoder-s2
     layer = deconv3d(layer, var_list[16], skip_layers[2].shape) + skip_layers[2]
     layer = resnet_block(layer, var_list[17])
-    layer = resnet_block(layer, var_list[18]) # (4, 16, 64, 64, 128)
+    layer = resnet_block(layer, var_list[18]) # (4, 4, 16, 16, 128)
+    print(layer)
     # decoder-s1
     layer = deconv3d(layer, var_list[19], skip_layers[1].shape) + skip_layers[1]
     layer = resnet_block(layer, var_list[20])
-    layer = resnet_block(layer, var_list[21]) # (4, 16, 64, 64, 64)
+    layer = resnet_block(layer, var_list[21]) # (4, 8, 32, 32, 64)
+    print(layer)
     # decoder-s0
     layer = deconv3d(layer, var_list[22], skip_layers[0].shape) + skip_layers[0]
     layer = resnet_block(layer, var_list[23])
     layer = resnet_block(layer, var_list[24])  # (4, 16, 64, 64, 32)
+    print(layer)
     # output-layer
     layer = conv3d(layer, var_list[25], activation=False) # (4, 16, 64, 64, 1)
     print(layer)

@@ -82,18 +82,25 @@ features = tf.keras.layers.Conv2D(32, 7, activation='relu',padding='SAME')(featu
 print(features)
 
 #If you don't specify strides it will default to pool size
-features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(1, 1),padding='SAME')(features) # window (or kernel) that it looks in is 3x3. Features size is now (None, 18, 20, 32) because 1/3 of the size
+features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(2, 2),padding='SAME')(features) # (None,26,29,1) 
 print(features)
 
-features_block_1 = tf.keras.layers.Conv2D(64, 3, activation='relu')(features) # size (None, 50, 56, 64)
+features_block_1 = tf.keras.layers.Conv2D(64, 3, activation='relu',padding='SAME')(features) # size (None, 26, 29, 64)
 print(features_block_1)
 
-features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_1)
-features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
-features_block_2 = features + features_block_1
+# features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_1)
+# features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
+# features_block_2 = features + features_block_1
+
+# features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_2)
+# features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
+# features = features + features_block_2
 
 #Then we go back up the layers
-features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3)(features_block_2) # size (None, 52, 58, 32)
+features = tf.keras.layers.UpSampling2D(size=(2, 2))(features_block_1) # (None,52,58,1)
+print(features)
+
+features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3,padding='SAME')(features) # size (None, 52, 58, 32)
 print(features_up_b_1)
 
 features_up_b_2 = tf.keras.layers.Conv2DTranspose(1, 3, activation='sigmoid',padding='SAME')(features_up_b_1) # size (None, 52, 58, 32)
