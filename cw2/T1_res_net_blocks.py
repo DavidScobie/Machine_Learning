@@ -96,6 +96,9 @@ print(features_block_1)
 features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(2, 2),padding='SAME')(features_block_1) # (None,13,15,1) 
 print(features)
 
+features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(3, 3),padding='SAME')(features) # (None,13,15,1) 
+print(features)
+
 # features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_1)
 # features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
 # features_block_2 = features + features_block_1
@@ -105,6 +108,9 @@ print(features)
 # features = features + features_block_2
 
 #Then we go back up the layers
+features = tf.keras.layers.UpSampling2D(size=(3, 3))(features) # (None,30,26,1)
+print(features)
+
 features = tf.keras.layers.UpSampling2D(size=(2, 2))(features) # (None,30,26,1)
 print(features)
 
