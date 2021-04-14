@@ -123,17 +123,48 @@ features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(fea
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
 features_block_9 = features + features_block_8
 
-features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(3, 3),padding='SAME')(features_block_9) # (None,13,15,1) 
+features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(3, 3),padding='SAME')(features_block_9) 
 print(features)
+#Change to 384 filters when it starts to actually work
+features_block_10 = tf.keras.layers.Conv2D(384, 3, activation='relu',padding='SAME')(features) #(None,5,5,384) 
+print(features_block_1)
+
+features = tf.keras.layers.Conv2D(384, 3, activation='relu', padding='same')(features_block_10)
+features = tf.keras.layers.Conv2D(384, 3, activation='relu', padding='same')(features)
+features_block_11 = features + features_block_10
+
+features = tf.keras.layers.Conv2D(384, 3, activation='relu', padding='same')(features_block_11)
+features = tf.keras.layers.Conv2D(384, 3, activation='relu', padding='same')(features)
+features_block_12 = features + features_block_11
+
+features = tf.keras.layers.Conv2D(384, 3, activation='relu', padding='same')(features_block_12)
+features = tf.keras.layers.Conv2D(384, 3, activation='relu', padding='same')(features)
+features_block_13 = features + features_block_12
 
 #Then we go back up the layers
-features = tf.keras.layers.UpSampling2D(size=(3, 3))(features) # (None,30,26,1)
+features_block_14 = tf.keras.layers.UpSampling2D(size=(3, 3))(features_block_13) # (None,15,15,128)
 print(features)
 
-features = tf.keras.layers.UpSampling2D(size=(2, 2))(features) # (None,30,26,1)
+# features = tf.keras.layers.Conv2DTranspose(128, 3, activation='relu', padding='same')(features_block_14)
+# features = tf.keras.layers.Conv2DTranspose(128, 3, activation='relu', padding='same')(features)
+# features_block_15 = features + features_block_14
+
+# features = tf.keras.layers.Conv2DTranspose(128, 3, activation='relu', padding='same')(features_block_15)
+# features = tf.keras.layers.Conv2DTranspose(128, 3, activation='relu', padding='same')(features)
+# features_block_16 = features + features_block_15
+
+features_block_17 = tf.keras.layers.UpSampling2D(size=(2, 2))(features_block_14) # (None,30,30,64)
 print(features)
 
-features = tf.keras.layers.UpSampling2D(size=(2, 2))(features) # (None,52,58,1)
+# features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_17)
+# features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
+# features_block_18 = features + features_block_17
+
+# features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_18)
+# features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
+# features_block_19 = features + features_block_18
+
+features = tf.keras.layers.UpSampling2D(size=(2, 2))(features_block_17) # (None,60,60,32)
 print(features)
 
 features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3,padding='SAME')(features) # size (None, 52, 58, 32)
