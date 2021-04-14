@@ -82,30 +82,49 @@ features = tf.keras.layers.ZeroPadding2D(padding=(1, 4))(features_input)
 print(features)
 
 #First we go down the layers
-features = tf.keras.layers.Conv2D(32, 7, activation='relu',padding='SAME')(features) #32 filters and 7x7 kernel size. Makes it (None,52,58,32) because we have padded
+features_block_1 = tf.keras.layers.Conv2D(32, 3, activation='relu',padding='SAME')(features) #32 filters and 7x7 kernel size. (None,60,60,32)
 print(features)
+
+features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features)
+features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features)
+features_block_2 = features + features_block_1
+
+features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features_block_2)
+features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features)
+features_block_3 = features + features_block_2
 
 #If you don't specify strides it will default to pool size
-features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(2, 2),padding='SAME')(features) # (None,26,29,1) 
+features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(2, 2),padding='SAME')(features_block_3) 
 print(features)
 
-features_block_1 = tf.keras.layers.Conv2D(64, 3, activation='relu',padding='SAME')(features) # size (None, 26, 29, 64)
+features_block_4 = tf.keras.layers.Conv2D(64, 3, activation='relu',padding='SAME')(features) #(None,30,30,64) 
 print(features_block_1)
 
+features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_4)
+features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
+features_block_5 = features + features_block_4
+
+features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_5)
+features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
+features_block_6 = features + features_block_5
+
 #Reducing size again
-features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(2, 2),padding='SAME')(features_block_1) # (None,13,15,1) 
+features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(2, 2),padding='SAME')(features_block_6) 
 print(features)
 
-features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(3, 3),padding='SAME')(features) # (None,13,15,1) 
+features_block_7 = tf.keras.layers.Conv2D(128, 3, activation='relu',padding='SAME')(features) #(None,15,15,128) 
+print(features_block_1)
+
+features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_7)
+features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
+features_block_8 = features + features_block_7
+
+features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_8)
+features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
+features_block_9 = features + features_block_8
+
+features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(3, 3),padding='SAME')(features_block_9) # (None,13,15,1) 
 print(features)
-
-# features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_1)
-# features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
-# features_block_2 = features + features_block_1
-
-# features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_2)
-# features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
-# features = features + features_block_2
 
 #Then we go back up the layers
 features = tf.keras.layers.UpSampling2D(size=(3, 3))(features) # (None,30,26,1)
