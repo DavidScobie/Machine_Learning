@@ -69,8 +69,8 @@ test_dataset = tf.data.Dataset.from_generator(generator = lambda: my_test_genera
 
 
 print(training_dataset)
-training_batch = training_dataset.shuffle(buffer_size=1024).batch(4)
-validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(4)
+training_batch = training_dataset.shuffle(buffer_size=1024).batch(1)
+validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(1)
 test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
 
 ## build the network layers
@@ -180,7 +180,7 @@ features_end = tf.keras.layers.Cropping2D(cropping=((1, 1), (4, 4)))(features_up
 model = tf.keras.Model(inputs=features_input, outputs=features_end)
 model.summary()
 
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
             #   loss='sparse_categorical_crossentropy',
               loss = 'MeanSquaredError',
               metrics=['MeanAbsoluteError'])
@@ -198,3 +198,13 @@ print(tf.shape(y_pred))
 test_pred = tf.image.convert_image_dtype(y_pred, tf.float32)
 plt.imshow(tf.squeeze(test_pred))
 # plt.show()
+
+#saving training loss logs
+loss_history = history_callback.history["loss"]
+numpy_loss_history = np.array(loss_history)
+np.savetxt("loss_history.txt", numpy_loss_history, delimiter=",")
+
+#saving validation loss logs
+val_loss_history = history_callback.history["val_loss"]
+numpy_val_loss_history = np.array(val_loss_history)
+np.savetxt("val_loss_history.txt", numpy_val_loss_history, delimiter=",")
