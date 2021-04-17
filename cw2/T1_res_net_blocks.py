@@ -8,7 +8,7 @@ import h5py
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 4
+num_subjects = 12
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -180,13 +180,13 @@ features_end = tf.keras.layers.Cropping2D(cropping=((1, 1), (4, 4)))(features_up
 model = tf.keras.Model(inputs=features_input, outputs=features_end)
 model.summary()
 
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
             #   loss='sparse_categorical_crossentropy',
               loss = 'MeanSquaredError',
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(4),validation_data = validation_batch)
 print('Training done.')
 
 #try the a frame to test the model
