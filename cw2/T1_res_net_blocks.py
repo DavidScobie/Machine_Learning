@@ -8,7 +8,7 @@ import h5py
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 12
+num_subjects = 4
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -17,11 +17,11 @@ subject_indices = range(num_subjects)
 frame_size = np.array([58,52,1])
 
 #image a slice
-frame1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0000_000_02' ),255)
+frame1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0060_000_00' ),255)
 # frame1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0000_000' ),255)
 img = tf.image.convert_image_dtype(frame1, tf.float32)
 plt.imshow(img)
-# plt.show()
+plt.show()
 
 ##MY DATA GENERATOR
 
@@ -30,7 +30,7 @@ num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
 training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
-test_indices = range(50,51)
+test_indices = range(60,61)
 
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
@@ -186,18 +186,36 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(4),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
 print('Training done.')
 
-#try the a frame to test the model
+#try a frame to test the model
 # test_data = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0050_000' ),255)
 print(test_batch)
 y_pred = model.predict(test_batch)
 print(tf.shape(y_pred))
 
 test_pred = tf.image.convert_image_dtype(y_pred, tf.float32)
+plt.figure(1)
 plt.imshow(tf.squeeze(test_pred))
-# plt.show()
+
+#Image the corresponding frame and label
+test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0060_000_00' ),255)
+test_label_1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0060_000_01' ),255)
+test_label_2 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0060_000_02' ),255)
+test_frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0060_000' ),255)
+test_label_0_img = tf.image.convert_image_dtype(test_label_0, tf.float32)
+test_frame_img = tf.image.convert_image_dtype(test_frame, tf.float32)
+test_label_1_img = tf.image.convert_image_dtype(test_label_1, tf.float32)
+test_label_2_img = tf.image.convert_image_dtype(test_label_2, tf.float32)
+plt.figure(2)
+plt.imshow(test_label_0_img)
+plt.figure(3)
+plt.imshow(test_label_1_img)
+plt.figure(4)
+plt.imshow(test_label_2_img)
+plt.figure(5)
+plt.imshow(test_frame_img)
 
 #saving training loss logs
 loss_history = history_callback.history["loss"]
@@ -208,3 +226,5 @@ np.savetxt("loss_history.txt", numpy_loss_history, delimiter=",")
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
 np.savetxt("val_loss_history.txt", numpy_val_loss_history, delimiter=",")
+
+plt.show()
