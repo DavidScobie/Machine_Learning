@@ -195,9 +195,20 @@ print(test_batch)
 y_pred = model.predict(test_batch)
 print(tf.shape(y_pred))
 
-test_pred = tf.image.convert_image_dtype(y_pred, tf.float32)
+test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
 plt.figure(1)
-plt.imshow(tf.squeeze(test_pred))
+plt.imshow(test_pred)
+
+#Put a 0.5 threshold on the prediction
+test_pred_shape = test_pred.shape
+test_pred_mask = tf.Variable(tf.zeros([test_pred_shape[0],test_pred_shape[1]], tf.int32))
+for i in range (test_pred_shape[0]):
+    for j in range (test_pred_shape[1]):
+        if test_pred[i][j] >= 0.5:
+            test_pred_mask[i,j].assign(1)
+
+plt.figure(2)
+plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32))
 
 #Image the corresponding frame and label
 test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0060_000_00' ),255)
@@ -208,17 +219,14 @@ test_label_0_img = tf.image.convert_image_dtype(test_label_0, tf.float32)
 test_frame_img = tf.image.convert_image_dtype(test_frame, tf.float32)
 test_label_1_img = tf.image.convert_image_dtype(test_label_1, tf.float32)
 test_label_2_img = tf.image.convert_image_dtype(test_label_2, tf.float32)
-plt.figure(2)
-plt.imshow(test_label_0_img)
 plt.figure(3)
-plt.imshow(test_label_1_img)
+plt.imshow(test_label_0_img)
 plt.figure(4)
-plt.imshow(test_label_2_img)
+plt.imshow(test_label_1_img)
 plt.figure(5)
+plt.imshow(test_label_2_img)
+plt.figure(6)
 plt.imshow(test_frame_img)
-
-#Put a 0.5 threshold on the prediction
-
 
 #saving training loss logs
 loss_history = history_callback.history["loss"]
