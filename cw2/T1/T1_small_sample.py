@@ -199,8 +199,6 @@ test_pred = tf.image.convert_image_dtype(y_pred, tf.float32)
 plt.figure(1)
 plt.imshow(tf.squeeze(test_pred))
 
-print(test_pred)
-
 #Image the corresponding frame and label
 test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0060_000_00' ),255)
 test_label_1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0060_000_01' ),255)
