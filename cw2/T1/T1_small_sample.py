@@ -186,7 +186,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
 print('Training done.')
 
 #try a frame to test the model
@@ -232,11 +232,11 @@ plt.imshow(test_frame_img)
 #saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-np.savetxt("loss_history.txt", numpy_loss_history, delimiter=",")
+np.savetxt(os.path.join('loss', 'loss_history.txt'), numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt("val_loss_history.txt", numpy_val_loss_history, delimiter=",")
+np.savetxt(os.path.join('loss', 'val_loss_history.txt'), numpy_val_loss_history, delimiter=",")
 
 # plt.show()
