@@ -101,6 +101,7 @@ def residual_unet(input):
     layer = resnet_block(layer, var_list[1]) # (4, 16, 64, 64, 32)
     layer = resnet_block(layer, var_list[2]) # (4, 16, 64, 64, 32)
     skip_layers.append(layer) # (4, 16, 64, 64, 32)
+    print(skip_layers)
     layer = downsample_maxpool(layer, var_list[3]) # (4, 8, 32, 32, 32) strides = 2 here, hence the halving of the size in x,y,z
     layer = conv3d(layer, var_list[4])  # (4, 8, 32, 32, 64)
     print(layer)
@@ -108,6 +109,7 @@ def residual_unet(input):
     layer = resnet_block(layer, var_list[5])
     layer = resnet_block(layer, var_list[6])
     skip_layers.append(layer)
+    print(skip_layers)
     layer = downsample_maxpool(layer, var_list[7])
     layer = conv3d(layer, var_list[8]) # (4, 4, 16, 16, 128)
     print(layer)

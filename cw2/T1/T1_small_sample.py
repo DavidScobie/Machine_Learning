@@ -143,7 +143,7 @@ features_block_13 = features + features_block_12
 
 #Then we go back up the layers
 #Upsampling layer 1
-features_block_14 = tf.keras.layers.Conv2DTranspose(128, strides=(3,3), kernel_size = (3,3), activation='relu')(features_block_13) # (None,15,15,128)
+features_block_14 = tf.keras.layers.Conv2DTranspose(128, strides=(3,3), kernel_size = (3,3), activation='relu')(features_block_13) + features_block_9 # (None,15,15,128)
 print(features_block_14)
 
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_14)
@@ -155,7 +155,7 @@ features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(fea
 features_block_16 = features + features_block_15
 
 #Upsampling layer 2
-features_block_17 = tf.keras.layers.Conv2DTranspose(64, strides=(2,2), kernel_size = (2,2), activation='relu')(features_block_16) # (None,30,30,64)
+features_block_17 = tf.keras.layers.Conv2DTranspose(64, strides=(2,2), kernel_size = (2,2), activation='relu')(features_block_16) + features_block_6 # (None,30,30,64)
 print(features_block_17)
 
 features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_17)
@@ -167,7 +167,7 @@ features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(feat
 features_block_19 = features + features_block_18
 
 #Upsampling layer 3
-features_block_20 = tf.keras.layers.Conv2DTranspose(32, strides=(2,2), kernel_size = (2,2), activation='relu')(features_block_19) # (None,60,60,32)
+features_block_20 = tf.keras.layers.Conv2DTranspose(32, strides=(2,2), kernel_size = (2,2), activation='relu')(features_block_19) + features_block_3 # (None,60,60,32)
 print(features_block_20)
 
 features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features_block_20)
@@ -177,19 +177,6 @@ features_block_21 = features + features_block_20
 features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features_block_21)
 features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features)
 features_block_22 = features + features_block_21
-# features_block_17 = tf.keras.layers.UpSampling2D(size=(2, 2))(features_block_19) # (None,30,30,64)
-# print(features)
-
-# features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_17)
-# features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
-# features_block_18 = features + features_block_17
-
-# features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_18)
-# features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
-# features_block_19 = features + features_block_18
-
-# features = tf.keras.layers.UpSampling2D(size=(2, 2))(features_block_19) # (None,60,60,32)
-# print(features)
 
 features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3,padding='SAME')(features_block_22) # size (None, 52, 58, 32)
 print(features_up_b_1)
@@ -210,7 +197,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
 print('Training done.')
 
 #try a frame to test the model
