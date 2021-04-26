@@ -166,6 +166,17 @@ features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(feat
 features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
 features_block_19 = features + features_block_18
 
+#Upsampling layer 3
+features_block_20 = tf.keras.layers.Conv2DTranspose(32, strides=(2,2), kernel_size = (2,2), activation='relu')(features_block_19) # (None,60,60,32)
+print(features_block_20)
+
+features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features_block_20)
+features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features)
+features_block_21 = features + features_block_20
+
+features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features_block_21)
+features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features)
+features_block_22 = features + features_block_21
 # features_block_17 = tf.keras.layers.UpSampling2D(size=(2, 2))(features_block_19) # (None,30,30,64)
 # print(features)
 
@@ -177,10 +188,10 @@ features_block_19 = features + features_block_18
 # features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
 # features_block_19 = features + features_block_18
 
-features = tf.keras.layers.UpSampling2D(size=(2, 2))(features_block_19) # (None,60,60,32)
-print(features)
+# features = tf.keras.layers.UpSampling2D(size=(2, 2))(features_block_19) # (None,60,60,32)
+# print(features)
 
-features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3,padding='SAME')(features) # size (None, 52, 58, 32)
+features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3,padding='SAME')(features_block_22) # size (None, 52, 58, 32)
 print(features_up_b_1)
 
 features_up_b_2 = tf.keras.layers.Conv2DTranspose(1, 3, activation='sigmoid',padding='SAME')(features_up_b_1) # size (None, 52, 58, 32)
@@ -199,7 +210,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
 print('Training done.')
 
 #try a frame to test the model
