@@ -85,7 +85,10 @@ print(features)
 features_block_1 = tf.keras.layers.Conv2D(32, 3, activation='relu',padding='SAME')(features) #32 filters and 7x7 kernel size. (None,60,60,32)
 print(features)
 
-features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features)
+#batch normalisation
+features_block_1 = tf.keras.layers.BatchNormalization()(features_block_1)
+
+features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features_block_1)
 features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features)
 features_block_2 = features + features_block_1
 
@@ -99,6 +102,8 @@ print(features)
 
 features_block_4 = tf.keras.layers.Conv2D(64, 3, activation='relu',padding='SAME')(features) #(None,30,30,64) 
 print(features_block_1)
+
+features_block_4 = tf.keras.layers.BatchNormalization()(features_block_4)
 
 features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_4)
 features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
@@ -115,6 +120,8 @@ print(features)
 features_block_7 = tf.keras.layers.Conv2D(128, 3, activation='relu',padding='SAME')(features) #(None,15,15,128) 
 print(features_block_1)
 
+features_block_7 = tf.keras.layers.BatchNormalization()(features_block_7)
+
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_7)
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
 features_block_8 = features + features_block_7
@@ -128,6 +135,8 @@ print(features)
 #Change to 384 filters when it starts to actually work
 features_block_10 = tf.keras.layers.Conv2D(384, 3, activation='relu',padding='SAME')(features) #(None,5,5,384) 
 print(features_block_1)
+
+features_block_10 = tf.keras.layers.BatchNormalization()(features_block_10)
 
 features = tf.keras.layers.Conv2D(384, 3, activation='relu', padding='same')(features_block_10)
 features = tf.keras.layers.Conv2D(384, 3, activation='relu', padding='same')(features)
@@ -158,6 +167,8 @@ features_block_16 = features + features_block_15
 features_block_17 = tf.keras.layers.Conv2DTranspose(64, strides=(2,2), kernel_size = (2,2), activation='relu')(features_block_16) + features_block_6 # (None,30,30,64)
 print(features_block_17)
 
+features_block_17 = tf.keras.layers.BatchNormalization()(features_block_17)
+
 features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features_block_17)
 features = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(features)
 features_block_18 = features + features_block_17
@@ -169,6 +180,8 @@ features_block_19 = features + features_block_18
 #Upsampling layer 3
 features_block_20 = tf.keras.layers.Conv2DTranspose(32, strides=(2,2), kernel_size = (2,2), activation='relu')(features_block_19) + features_block_3 # (None,60,60,32)
 print(features_block_20)
+
+features_block_20 = tf.keras.layers.BatchNormalization()(features_block_20)
 
 features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features_block_20)
 features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(features)
