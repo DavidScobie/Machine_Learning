@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 
 epo=300
 
-loss_fname = './T1/loss/epo300_check_pred_mask_l_h.txt'
+loss_fname = './T1/loss/epo300_skip_layers_full_r_n_b_l_h.txt'
 numpy_loss_history = np.loadtxt(loss_fname)
 
-val_loss_fname = './T1/loss/epo300_check_pred_mask_v_l_h.txt'
+val_loss_fname = './T1/loss/epo300_skip_layers_full_r_n_b_v_l_h.txt'
 numpy_val_loss_history = np.loadtxt(val_loss_fname)
 
-pred_mask_fname = './T1/pred_masks/pred_mask.txt'
+pred_mask_fname = './T1/pred_masks/epo300_skip_layers_full_r_n_b_p_m.txt'
 numpy_p_m = np.loadtxt(pred_mask_fname)
 
 plt.figure(0)

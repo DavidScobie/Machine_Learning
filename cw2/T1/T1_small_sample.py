@@ -1,6 +1,7 @@
 import os
 import random
 import matplotlib.pyplot as plt
+import tensorflow.keras.backend as kb
 import tensorflow as tf
 import numpy as np 
 import h5py
@@ -204,13 +205,18 @@ features_end = tf.keras.layers.Cropping2D(cropping=((1, 1), (4, 4)))(features_up
 model = tf.keras.Model(inputs=features_input, outputs=features_end)
 model.summary()
 
+def keras_custom_loss_function(y_actual,y_predicted):
+    custom_loss_values=kb.mean(kb.sum(kb.square((y_actual-y_predicted/10))))
+    return custom_loss_values
+
+
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
-            #   loss='sparse_categorical_crossentropy',
-              loss = 'MeanSquaredError',
+              loss = keras_custom_loss_function,
+            #   loss = 'MeanSquaredError',
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
 print('Training done.')
 
 #try a frame to test the model
