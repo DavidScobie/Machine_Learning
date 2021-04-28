@@ -206,7 +206,20 @@ model = tf.keras.Model(inputs=features_input, outputs=features_end)
 model.summary()
 
 def keras_custom_loss_function(y_actual,y_predicted):
-    custom_loss_values=kb.mean(kb.sum(kb.square((y_actual-y_predicted/10))))
+    print(y_predicted)
+    # y_predicted = tf.squeeze(y_predicted)
+    # y_predicted = tf.squeeze(tf.image.convert_image_dtype(y_predicted, tf.float32))
+    y_predicted_shape = y_predicted.shape
+    print(y_predicted_shape[1])
+    y_predicted_mask = tf.Variable(tf.zeros([y_predicted_shape[1],y_predicted_shape[2]], tf.int32))
+    for i in range (y_predicted_shape[1]):
+        for j in range (y_predicted_shape[2]):
+            print(y_predicted)
+            print(y_predicted[:][2][4][:])
+            if y_predicted[:][i][j][:] >= 0.5:
+                y_predicted_mask[i,j].assign(1)
+
+    custom_loss_values=kb.mean(kb.sum(kb.square((y_actual-y_predicted_mask/10))))
     return custom_loss_values
 
 
@@ -216,7 +229,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
 print('Training done.')
 
 #try a frame to test the model
