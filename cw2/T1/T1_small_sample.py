@@ -206,20 +206,23 @@ model = tf.keras.Model(inputs=features_input, outputs=features_end)
 model.summary()
 
 def keras_custom_loss_function(y_actual,y_predicted):
-    print(y_predicted)
+    # print(y_predicted)
+    # print(y_predicted[:][2][4][:])
+    # print(y_predicted[:,2,4,:])
+    # print(y_predicted[:,2,4,:][1])
     # y_predicted = tf.squeeze(y_predicted)
     # y_predicted = tf.squeeze(tf.image.convert_image_dtype(y_predicted, tf.float32))
     y_predicted_shape = y_predicted.shape
-    print(y_predicted_shape[1])
+    # print(y_predicted_shape[1])
     y_predicted_mask = tf.Variable(tf.zeros([y_predicted_shape[1],y_predicted_shape[2]], tf.int32))
     for i in range (y_predicted_shape[1]):
         for j in range (y_predicted_shape[2]):
-            print(y_predicted)
-            print(y_predicted[:][2][4][:])
-            if y_predicted[:][i][j][:] >= 0.5:
-                y_predicted_mask[i,j].assign(1)
+            # print(y_predicted)
+            # if y_predicted[:][i][j][:] >= 0.5:
+            #     y_predicted_mask[i,j].assign(1)
+            tf.cond(tf.greater(y_predicted[:][i][j][:], 0.5), lambda: y_predicted_mask[i,j].assign(1), lambda: 0)
 
-    custom_loss_values=kb.mean(kb.sum(kb.square((y_actual-y_predicted_mask/10))))
+    custom_loss_values=kb.mean(kb.sum(kb.square((y_actual.astype(np.float32)-y_predicted_mask/10))))
     return custom_loss_values
 
 
