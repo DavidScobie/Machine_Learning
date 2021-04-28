@@ -206,24 +206,19 @@ model = tf.keras.Model(inputs=features_input, outputs=features_end)
 model.summary()
 
 def keras_custom_loss_function(y_actual,y_predicted):
-    # print(y_predicted)
-    # print(y_predicted[:][2][4][:])
-    # print(y_predicted[:,2,4,:])
-    # print(y_predicted[:,2,4,:][1])
-    # y_predicted = tf.squeeze(y_predicted)
-    # y_predicted = tf.squeeze(tf.image.convert_image_dtype(y_predicted, tf.float32))
-    y_predicted_shape = y_predicted.shape
-    # print(y_predicted_shape[1])
-    y_predicted_mask = tf.Variable(tf.zeros([y_predicted_shape[1],y_predicted_shape[2]], tf.int32))
-    for i in range (y_predicted_shape[1]):
-        for j in range (y_predicted_shape[2]):
-            # print(y_predicted)
-            # if y_predicted[:][i][j][:] >= 0.5:
-            #     y_predicted_mask[i,j].assign(1)
-            tf.cond(tf.greater(y_predicted[:][i][j][:], 0.5), lambda: y_predicted_mask[i,j].assign(1), lambda: 0)
+    print(y_actual)
+    print(y_predicted)
 
-    custom_loss_values=kb.mean(kb.sum(kb.square((y_actual.astype(np.float32)-y_predicted_mask/10))))
-    return custom_loss_values
+    # dice_numerator = 2 * tf.reduce_sum(pred*target, axis=[1,2,3,4])
+    # dice_denominator = eps + tf.reduce_sum(pred, axis=[1,2,3,4]) + tf.reduce_sum(target, axis=[1,2,3,4])
+    # return  1 - tf.reduce_mean(dice_numerator/dice_denominator)
+    eps = 1e-6
+    numer = 2*kb.sum(y_predicted*y_actual)
+    denom = eps + kb.sum(y_predicted) + kb.sum(y_actual)
+    return 1 - kb.mean(numer/denom)
+
+    # custom_loss_values=kb.mean(kb.sum(kb.square((y_actual-y_predicted/10))))
+    # return custom_loss_values
 
 
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
@@ -232,7 +227,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
 print('Training done.')
 
 #try a frame to test the model
@@ -246,6 +241,7 @@ plt.figure(1)
 plt.imshow(test_pred)
 
 #Put a 0.5 threshold on the prediction
+print(test_pred)
 test_pred_shape = test_pred.shape
 test_pred_mask = tf.Variable(tf.zeros([test_pred_shape[0],test_pred_shape[1]], tf.int32))
 for i in range (test_pred_shape[0]):
@@ -285,4 +281,4 @@ val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
 np.savetxt(os.path.join('loss', 'val_loss_history.txt'), numpy_val_loss_history, delimiter=",")
 
-plt.show()
+# plt.show()
