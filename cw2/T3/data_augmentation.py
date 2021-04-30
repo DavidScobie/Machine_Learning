@@ -64,15 +64,20 @@ mask_datagen.fit(mask, augment=True, seed=seed)
 datagen=ImageDataGenerator(rotation_range=90,
                            horizontal_flip=True,
                            vertical_flip=True)
-imagegen=datagen.flow(image,y=mask,batch_size=1)
-# imagegen=datagen.flow(frame1,y=label1,batch_size=1)
-print(imagegen)
+seed = 1
+imagegen=datagen.flow(image,batch_size=1,seed=seed)
+imagegen2=datagen.flow(mask,batch_size=1,seed=seed)
 x=imagegen.next()
+y=imagegen2.next()
 print(np.shape(x))
 plt.figure(0)
-plt.imshow(x[0][0].astype('float32'))
-plt.figure(1)
-plt.imshow(x[1][0].astype('float32'))
+plt.imshow(x[0].astype('float32'))
+# plt.figure(1)
+# plt.imshow(x[1][0].astype('float32'))
+plt.figure(2)
+plt.imshow(y[0].astype('float32'))
+# plt.figure(3)
+# plt.imshow(y[1][0].astype('float32'))
 plt.show()
 
 
