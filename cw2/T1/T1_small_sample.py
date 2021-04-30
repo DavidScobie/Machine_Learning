@@ -206,19 +206,10 @@ model = tf.keras.Model(inputs=features_input, outputs=features_end)
 model.summary()
 
 def keras_custom_loss_function(y_actual,y_predicted):
-    print(y_actual)
-    print(y_predicted)
-
-    # dice_numerator = 2 * tf.reduce_sum(pred*target, axis=[1,2,3,4])
-    # dice_denominator = eps + tf.reduce_sum(pred, axis=[1,2,3,4]) + tf.reduce_sum(target, axis=[1,2,3,4])
-    # return  1 - tf.reduce_mean(dice_numerator/dice_denominator)
     eps = 1e-6
     numer = 2*kb.sum(y_predicted*y_actual)
     denom = eps + kb.sum(y_predicted) + kb.sum(y_actual)
     return 1 - kb.mean(numer/denom)
-
-    # custom_loss_values=kb.mean(kb.sum(kb.square((y_actual-y_predicted/10))))
-    # return custom_loss_values
 
 
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
@@ -241,7 +232,6 @@ plt.figure(1)
 plt.imshow(test_pred)
 
 #Put a 0.5 threshold on the prediction
-print(test_pred)
 test_pred_shape = test_pred.shape
 test_pred_mask = tf.Variable(tf.zeros([test_pred_shape[0],test_pred_shape[1]], tf.int32))
 for i in range (test_pred_shape[0]):
@@ -281,4 +271,4 @@ val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
 np.savetxt(os.path.join('loss', 'val_loss_history.txt'), numpy_val_loss_history, delimiter=",")
 
-# plt.show()
+plt.show()
