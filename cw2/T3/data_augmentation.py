@@ -45,7 +45,7 @@ print(x0_tensor)
 x0_tens_flat = tf.squeeze(x0_tensor)
 print(x0_tens_flat)
 
-# plt.show()
+plt.show()
 
 
 
