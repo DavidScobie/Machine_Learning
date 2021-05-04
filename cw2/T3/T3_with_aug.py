@@ -5,6 +5,8 @@ import tensorflow.keras.backend as kb
 import tensorflow as tf
 import numpy as np 
 import h5py
+import random as rd
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
@@ -33,6 +35,14 @@ training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
 test_indices = range(191,192)
 
+#Define augmentation image data generator
+datagen=ImageDataGenerator(rotation_range=90,
+                           horizontal_flip=True,
+                           vertical_flip=True)
+
+#set training batch size
+t_b_size = 2
+
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
         # idx_frame_indics = range(num_subjects)
@@ -43,6 +53,26 @@ def my_data_generator(subject_indices):
             frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
             l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
             label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+           
+            #data augmentation
+            ran_num = rd.randint(1,100)
+            if ran_num <= 20:
+                # Add the image to a batch
+                image = tf.expand_dims(frame, 0)
+                image = tf.expand_dims(image, 3)
+                mask = tf.expand_dims(label0, 0)
+                mask = tf.expand_dims(mask, 3)
+
+                seed = rd.randint(10,100000)
+                imagegen=datagen.flow(image,batch_size=t_b_size,seed=seed)
+                imagegen2=datagen.flow(mask,batch_size=t_b_size,seed=seed)
+
+                x=imagegen.next()
+                y=imagegen2.next()
+
+                frame = tf.squeeze(tf.convert_to_tensor(x[0]))
+                label0 = tf.squeeze(tf.convert_to_tensor(y[0]))
+
             yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
 
 def my_test_generator(subject_indices):
@@ -70,8 +100,8 @@ test_dataset = tf.data.Dataset.from_generator(generator = lambda: my_test_genera
 
 
 print(training_dataset)
-training_batch = training_dataset.shuffle(buffer_size=1024).batch(1)
-validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(1)
+training_batch = training_dataset.shuffle(buffer_size=1024).batch(t_b_size)
+validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(t_b_size)
 test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
 
 ## build the network layers
@@ -218,7 +248,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
 print('Training done.')
 
 #try a frame to test the model
