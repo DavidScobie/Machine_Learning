@@ -56,7 +56,10 @@ def my_data_generator(subject_indices):
 
         f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
         frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-        l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
+        
+        #randomly pick one label from the 3
+        label_indic = rd.randint(0,2)
+        l0_dataset = 'label_%04d_%03d_%02d' % (iSbj, frame_indic, label_indic)
         label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
         
         #data augmentation
