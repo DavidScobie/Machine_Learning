@@ -36,8 +36,9 @@ print(sets)
 print(sets[0])
 
 #make a for loop over each of the 5 sets
-for p in range(5):
-    set_pick = sets[p]
+# for mod_num in range(5):
+for mod_num in range(1):
+    set_pick = sets[mod_num]
 
     validation_split = 0.25
     num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
@@ -62,8 +63,7 @@ for p in range(5):
             if exists == False:
                 relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
                 if len(relevant_keys) > 1: #case 64 only has 1 frame
-                    frame_indic = np.random.randint(0,high=len(relevant_keys)-1)
-                
+                    frame_indic = np.random.randint(0,high=len(relevant_keys)-1)               
                     f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
                     frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
                     l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
@@ -77,8 +77,7 @@ for p in range(5):
             if exists == True:
                 relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
                 if len(relevant_keys) > 1: #case 64 only has 1 frame
-                    frame_indic = np.random.randint(0,high=len(relevant_keys)-1)
-                
+                    frame_indic = np.random.randint(0,high=len(relevant_keys)-1)                
                     f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
                     frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
                     l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
@@ -259,7 +258,37 @@ for p in range(5):
 
     #don't bother with shuffling and batches for now
     history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
-    print('Training done.')
+    model_name = 'my_model_%02d.h5' % (mod_num)
+    model.save(model_name)
+
+    json_filename = 'mod_%02d.json' % (mod_num)
+    weights_filename = 'weights_%02d.h5' % (mod_num)
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open(json_filename, "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights(weights_filename)
+    print("Saved model to disk")
+print('Training done.')
+
+# model0 = keras.models.load_model('my_model_00.h5')
+# y_pred0 = model0.predict(test_batch)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
 #try a frame to test the model
 # test_data = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0050_000' ),255)
