@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 
 epo=300
 
-loss_fname = './T3/loss/epo300_data_augmentation_l_h.txt'
+loss_fname = './T4/loss/4c_loss_history.txt'
 numpy_loss_history = np.loadtxt(loss_fname)
 
-val_loss_fname = './T3/loss/epo300_data_augmentation_v_l_h.txt'
+val_loss_fname = './T4/loss/4c_val_loss_history.txt'
 numpy_val_loss_history = np.loadtxt(val_loss_fname)
 
-pred_mask_fname = './T3/pred_masks/epo300_data_augmentation_p_m.txt'
+pred_mask_fname = './T4/pred_masks/4c_pred_mask.txt'
 numpy_p_m = np.loadtxt(pred_mask_fname)
 
 plt.figure(0)
