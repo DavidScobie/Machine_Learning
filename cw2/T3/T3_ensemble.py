@@ -1,16 +1,14 @@
-# import random
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as kb
 import tensorflow as tf
 import numpy as np 
 import h5py
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-# from sklearn.model_selection import KFold
 
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 4
+num_subjects = 180
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -27,6 +25,13 @@ plt.imshow(img)
 
 ##MY DATA GENERATOR
 
+#making 5 bins for the cross validation
+set_1 = array = list(range(0, 36))
+set_2 = array = list(range(36+1, 2*36))
+set_3 = array = list(range((2*36)+1, 3*36))
+set_4 = array = list(range((3*36)+1, 4*36))
+set_5 = array = list(range((4*36)+1, 5*36))
+
 validation_split = 0.25
 num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
@@ -42,40 +47,36 @@ datagen=ImageDataGenerator(rotation_range=90,
 #set training batch size
 t_b_size = 2
 
-# def make_dataset(X_data,y_data,n_splits):
-def my_data_generator(subject_indices):
 
+def my_train_generator(subject_indices):
     for iSbj in subject_indices:
-        # idx_frame_indics = range(num_subjects)
-        relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-        idx_frame_indics = range(len(relevant_keys))
-        for idx_frame in idx_frame_indics:
-            f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-            frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-            l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
-            label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-        
-            #data augmentation
-            ran_num = np.random.randint(100) #generate random number between 0 and 99
-            if ran_num <= 19: #this takes into account first 20 numbers (as 0 is included)
-                # Add the image to a batch
-                image = tf.expand_dims(frame, 0)
-                image = tf.expand_dims(image, 3)
-                mask = tf.expand_dims(label0, 0)
-                mask = tf.expand_dims(mask, 3)
+        #only using 4 of the 5 training sets
+        exists = iSbj in set_1
+        if exists == False:
+            relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
+            if len(relevant_keys) > 1: #case 64 only has 1 frame
+                frame_indic = np.random.randint(0,high=len(relevant_keys)-1)
+            
+                f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
+                frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+                l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
+                label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+                yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
 
-                seed = np.random.randint(10,high=100000)
-
-                imagegen=datagen.flow(image,batch_size=t_b_size,seed=seed)
-                imagegen2=datagen.flow(mask,batch_size=t_b_size,seed=seed)
-
-                x=imagegen.next()
-                y=imagegen2.next()
-
-                frame = tf.squeeze(tf.convert_to_tensor(x[0]))
-                label0 = tf.squeeze(tf.convert_to_tensor(y[0]))
-
-            yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
+def my_val_generator(subject_indices):
+    for iSbj in subject_indices:
+        #only using 1 of the 5 training sets
+        exists = iSbj in set_1
+        if exists == True:
+            relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
+            if len(relevant_keys) > 1: #case 64 only has 1 frame
+                frame_indic = np.random.randint(0,high=len(relevant_keys)-1)
+            
+                f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
+                frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+                l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
+                label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+                yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
 
 def my_test_generator(subject_indices):
     for iSbj in subject_indices:
@@ -88,11 +89,11 @@ def my_test_generator(subject_indices):
             frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
             yield(tf.expand_dims(frame, axis=2))
 
-training_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=training_indices), 
+training_dataset = tf.data.Dataset.from_generator(generator = lambda: my_train_generator(subject_indices=training_indices), 
                                          output_types = (tf.float32, tf.float32),
                                          output_shapes = (frame_size, frame_size))
 
-validation_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=validation_indices), 
+validation_dataset = tf.data.Dataset.from_generator(generator = lambda: my_val_generator(subject_indices=training_indices), 
                                          output_types = (tf.float32, tf.float32),
                                          output_shapes = (frame_size, frame_size))
 
