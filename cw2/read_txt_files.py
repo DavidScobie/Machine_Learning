@@ -1,15 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-epo=300
+epo=100
 
-loss_fname = './T4/loss/4c_loss_history.txt'
+loss_fname = './T3/loss/cluster/loss_history03.txt'
 numpy_loss_history = np.loadtxt(loss_fname)
 
-val_loss_fname = './T4/loss/4c_val_loss_history.txt'
+val_loss_fname = './T3/loss/cluster/val_loss_history03.txt'
 numpy_val_loss_history = np.loadtxt(val_loss_fname)
 
-pred_mask_fname = './T4/pred_masks/4c_pred_mask.txt'
+pred_mask_fname = './T3/pred_masks/cluster/pred_mask03.txt'
 numpy_p_m = np.loadtxt(pred_mask_fname)
 
 plt.figure(0)

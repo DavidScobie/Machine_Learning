@@ -32,12 +32,9 @@ set_3 = array = list(range((2*36)+1, 3*36))
 set_4 = array = list(range((3*36)+1, 4*36))
 set_5 = array = list(range((4*36)+1, 5*36))
 sets = [set_1,set_2,set_3,set_4,set_5]
-print(sets)
-print(sets[0])
 
 #make a for loop over each of the 5 sets
-# for mod_num in range(5):
-for mod_num in range(1):
+for mod_num in range(5):
     set_pick = sets[mod_num]
 
     validation_split = 0.25
@@ -257,12 +254,12 @@ for mod_num in range(1):
                 metrics=['MeanAbsoluteError'])
 
     #don't bother with shuffling and batches for now
-    history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
-    model_name = 'my_model_%02d.h5' % (mod_num)
-    model.save(model_name)
+    history_callback = model.fit(training_batch, epochs=int(300),validation_data = validation_batch)
+    # model_name = 'my_model_%02d.h5' % (mod_num)
+    # model.save(model_name)
 
-    json_filename = 'mod_%02d.json' % (mod_num)
-    weights_filename = 'weights_%02d.h5' % (mod_num)
+    json_filename = './jsons/mod_%02d.json' % (mod_num)
+    weights_filename = './weights/weights_%02d.h5' % (mod_num)
     # serialize model to JSON
     model_json = model.to_json()
     with open(json_filename, "w") as json_file:
@@ -270,75 +267,57 @@ for mod_num in range(1):
     # serialize weights to HDF5
     model.save_weights(weights_filename)
     print("Saved model to disk")
-print('Training done.')
-
-# model0 = keras.models.load_model('my_model_00.h5')
-# y_pred0 = model0.predict(test_batch)
+    print('Training done.')
 
 
+    #try a frame to test the model
+    y_pred = model.predict(test_batch)
 
+    test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
+    plt.figure(1)
+    plt.imshow(test_pred)
 
+    #Put a 0.5 threshold on the prediction
+    test_pred_shape = test_pred.shape
+    test_pred_mask = tf.Variable(tf.zeros([test_pred_shape[0],test_pred_shape[1]], tf.int32))
+    for i in range (test_pred_shape[0]):
+        for j in range (test_pred_shape[1]):
+            if test_pred[i][j] >= 0.5:
+                test_pred_mask[i,j].assign(1)
 
+    plt.figure(2)
+    plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32))
+    mask_fname = './pred_masks/pred_mask%02d.txt' % (mod_num)
+    np.savetxt(mask_fname, tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
 
+    #Image the corresponding frame and label
+    test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_00' ),255)
+    test_label_1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_01' ),255)
+    test_label_2 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_02' ),255)
+    test_frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0191_004' ),255)
+    test_label_0_img = tf.image.convert_image_dtype(test_label_0, tf.float32)
+    test_frame_img = tf.image.convert_image_dtype(test_frame, tf.float32)
+    test_label_1_img = tf.image.convert_image_dtype(test_label_1, tf.float32)
+    test_label_2_img = tf.image.convert_image_dtype(test_label_2, tf.float32)
+    plt.figure(3)
+    plt.imshow(test_label_0_img)
+    plt.figure(4)
+    plt.imshow(test_label_1_img)
+    plt.figure(5)
+    plt.imshow(test_label_2_img)
+    plt.figure(6)
+    plt.imshow(test_frame_img)
 
+    #saving training loss logs
+    loss_history = history_callback.history["loss"]
+    numpy_loss_history = np.array(loss_history)
+    loss_fname = './loss/loss_history%02d.txt' % (mod_num)
+    np.savetxt(loss_fname, numpy_loss_history, delimiter=",")
 
-
-
-
-
-
-
-
-'''
-#try a frame to test the model
-# test_data = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0050_000' ),255)
-print(test_batch)
-y_pred = model.predict(test_batch)
-print(tf.shape(y_pred))
-
-test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
-plt.figure(1)
-plt.imshow(test_pred)
-
-#Put a 0.5 threshold on the prediction
-test_pred_shape = test_pred.shape
-test_pred_mask = tf.Variable(tf.zeros([test_pred_shape[0],test_pred_shape[1]], tf.int32))
-for i in range (test_pred_shape[0]):
-    for j in range (test_pred_shape[1]):
-        if test_pred[i][j] >= 0.5:
-            test_pred_mask[i,j].assign(1)
-
-plt.figure(2)
-plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32))
-np.savetxt('./pred_masks/pred_mask.txt', tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
-
-#Image the corresponding frame and label
-test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_00' ),255)
-test_label_1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_01' ),255)
-test_label_2 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_02' ),255)
-test_frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0191_004' ),255)
-test_label_0_img = tf.image.convert_image_dtype(test_label_0, tf.float32)
-test_frame_img = tf.image.convert_image_dtype(test_frame, tf.float32)
-test_label_1_img = tf.image.convert_image_dtype(test_label_1, tf.float32)
-test_label_2_img = tf.image.convert_image_dtype(test_label_2, tf.float32)
-plt.figure(3)
-plt.imshow(test_label_0_img)
-plt.figure(4)
-plt.imshow(test_label_1_img)
-plt.figure(5)
-plt.imshow(test_label_2_img)
-plt.figure(6)
-plt.imshow(test_frame_img)
-
-#saving training loss logs
-loss_history = history_callback.history["loss"]
-numpy_loss_history = np.array(loss_history)
-np.savetxt('./loss/loss_history.txt', numpy_loss_history, delimiter=",")
-
-#saving validation loss logs
-val_loss_history = history_callback.history["val_loss"]
-numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt('./loss/val_loss_history.txt',numpy_val_loss_history, delimiter=",")
+    #saving validation loss logs
+    val_loss_history = history_callback.history["val_loss"]
+    numpy_val_loss_history = np.array(val_loss_history)
+    val_loss_fname = './loss/val_loss_history%02d.txt' % (mod_num)
+    np.savetxt(val_loss_fname,numpy_val_loss_history, delimiter=",")
 
 # plt.show()
-'''
