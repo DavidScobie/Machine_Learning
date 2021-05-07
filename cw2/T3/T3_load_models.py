@@ -8,6 +8,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import model_from_json
 
 frame_size = np.array([58,52,1])
+stck_pred_masks = tf.Variable(tf.zeros([58,52,4], tf.int32))
 
 for mod_num in range(4):
     # load json and create model
@@ -58,5 +59,29 @@ for mod_num in range(4):
 
     plt.figure(mod_num)
     plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32))
+
+    stck_pred_masks[:,:,mod_num].assign(test_pred_mask)
+
+
+
+stck_pred_masks = tf.cast(stck_pred_masks,tf.float32)
+avg_mask = tf.math.reduce_mean(stck_pred_masks, axis=2)
+
+# print(tf.math.reduce_max(avg_mask))
+# print(tf.math.reduce_max(tf.cast(avg_mask,tf.float32)))
+
+plt.figure(4)
+plt.imshow(tf.image.convert_image_dtype(avg_mask, tf.float32))
+
+#Put a 0.5 threshold on the ensemble prediction
+avg_mask_shape = avg_mask.shape
+avg_mask_bin = tf.Variable(tf.zeros([avg_mask_shape[0],avg_mask_shape[1]], tf.int32))
+for i in range (avg_mask_shape[0]):
+    for j in range (avg_mask_shape[1]):
+        if avg_mask[i][j] >= 0.5:
+            avg_mask_bin[i,j].assign(1)
+
+plt.figure(5)
+plt.imshow(tf.image.convert_image_dtype(avg_mask_bin, tf.float32))
 
 plt.show()
