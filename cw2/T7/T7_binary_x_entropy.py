@@ -78,17 +78,23 @@ validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(t_b_size)
 test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
 # test_batch = validation_dataset.shuffle(buffer_size=1024).batch(1)
 
-model = VGG16(weights = None, include_top = True, classes=2, input_shape = [58,52,1])
+VGG_model = VGG16(weights = None, include_top = False, input_shape = [58,52,1])
+
+model = tf.keras.Sequential()
+
+for layer in VGG_model.layers[:-1]:
+    model.add(layer)
+
+model.add(tf.keras.layers.Flatten())
+model.add(tf.keras.layers.Dense(1,activation='sigmoid'))
 
 print(model.summary())
 
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
-              loss='sparse_categorical_crossentropy',
-              metrics=['SparseCategoricalAccuracy'])
-            #   loss='binary_crossentropy',
-            #   metrics=['binary_crossentropy'])
-            #   loss='hinge',
-            #   metrics=['hinge'])
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+            #   loss='sparse_categorical_crossentropy',
+            #   metrics=['SparseCategoricalAccuracy'])
+              loss='binary_crossentropy',
+              metrics=['binary_crossentropy'])
               
 
 history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
