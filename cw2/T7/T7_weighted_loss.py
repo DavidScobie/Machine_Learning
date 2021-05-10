@@ -22,7 +22,7 @@ training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
 test_indices = range(191,192)
 
-t_b_size = 20
+t_b_size = 1
 
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
@@ -99,9 +99,23 @@ print(model.summary())
 def keras_custom_loss_function(y_actual,y_predicted):
     y_predicted = tf.cast(y_predicted,tf.float32)
     y_actual = tf.cast(y_actual,tf.float32)
+    print(y_actual)
+    print(tf.cast(y_actual,tf.float32))
+    # coef = 1
+    # coef = tf.cast(coef,tf.float32)
+    # if y_actual == 0:
+    #     coef = 156/44
+    
+    # tf.math.scalar_mul(
+    # coef, x, name=None
+    # )
+
     first_term = y_actual*(kb.log(y_predicted))
     second_term = (1-y_actual)*(kb.log(1-y_predicted))
-    return -kb.sum(first_term+second_term)
+    if tf.reshape(y_actual,[]) == 0:
+        return -(156/44)*(1/t_b_size)*kb.sum(first_term+second_term)
+    return -(1)*(1/t_b_size)*kb.sum(first_term+second_term)
+    # return tf.math.scalar_mul(coef,-1*(1/t_b_size)*kb.sum(first_term+second_term))
 
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
             #   loss='sparse_categorical_crossentropy',
