@@ -75,7 +75,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
               loss='sparse_categorical_crossentropy',
               metrics=['SparseCategoricalAccuracy'])
 
-history_callback = model.fit(training_batch, epochs=int(5),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
 
 print('Training done.')
 

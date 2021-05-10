@@ -53,12 +53,14 @@ def my_test_generator(subject_indices):
     for iSbj in subject_indices:
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
         if len(relevant_keys) > 1: #case 64 only has 1 frame
-            frame_indic = np.random.randint(0,high=len(relevant_keys)-1)
-            test_frame = frame_indic
-            print(test_frame)
-            f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
-            frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-            yield(tf.expand_dims(frame, axis=2))
+            # frame_indic = np.random.randint(0,high=len(relevant_keys)-1)
+            # test_frame = frame_indic
+            # print(test_frame)
+            all_frame_indics = len(relevant_keys)-1
+            for frame_indic in range(all_frame_indics):
+                f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
+                frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+                yield(tf.expand_dims(frame, axis=2))
 
 training_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=training_indices), 
                                          output_types = (tf.float32, tf.int32),
@@ -85,13 +87,13 @@ print(model.summary())
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
               loss='sparse_categorical_crossentropy',
               metrics=['SparseCategoricalAccuracy'])
-            #   loss='BinaryCrossentropy',
-            #   metrics=['BinaryCrossentropy'])
+            #   loss='binary_crossentropy',
+            #   metrics=['binary_crossentropy'])
             #   loss='hinge',
             #   metrics=['hinge'])
               
 
-history_callback = model.fit(training_batch, epochs=int(5),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
 
 print('Training done.')
 
@@ -107,6 +109,9 @@ np.savetxt('./loss/loss_history.txt', numpy_loss_history, delimiter=",")
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
 np.savetxt('./loss/val_loss_history.txt',numpy_val_loss_history, delimiter=",")
+
+#saving predictions
+np.savetxt('./class_preds/class_pred.txt',y_pred, delimiter=",")
 
 '''
 #image test frame
