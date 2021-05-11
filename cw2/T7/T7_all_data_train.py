@@ -9,7 +9,7 @@ from tensorflow.keras.applications.vgg16 import VGG16
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 45
+num_subjects = 180
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -20,7 +20,7 @@ num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
 training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
-test_indices = range(191,192)
+test_indices = range(num_subjects,200)
 
 t_b_size = 45
 
@@ -107,7 +107,7 @@ history_callback = model.fit(training_batch, epochs=int(1),validation_data = val
 print('Training done.')
 
 y_pred = model.predict(test_batch)
-print(y_pred)
+# print(y_pred)
 
 #apply binary threshold on predictions
 y_pred_binary = np.zeros((len(y_pred), 1))
@@ -115,11 +115,9 @@ for i in range(len(y_pred)):
     if y_pred[i] >= 0.5:
         y_pred_binary[i] = 1
 
-print(y_pred_binary)
-
 #what are the corresponding true values for the test set?
 y_true = []
-for iSbj in range(191,192):
+for iSbj in test_indices:
     relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
     idx_frame_indics = range(len(relevant_keys))
     for idx_frame in idx_frame_indics:
@@ -144,6 +142,7 @@ for iSbj in range(191,192):
                 is_it = 1
             y_true.append(is_it)
 
+#match the true up with the prediction to get accuracy score
 np_ar_true = np.asarray(y_true)
 match = np.zeros((len(y_pred), 1))
 
@@ -151,7 +150,6 @@ for i in range(len(y_pred)):
     if y_pred_binary[i] == np_ar_true[i]:
         match[i] = 1
 
-print(match)
 acc = (np.sum(match))/(len(match))
 print(acc)
 
