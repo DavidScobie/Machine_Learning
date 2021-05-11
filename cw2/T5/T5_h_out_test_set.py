@@ -76,7 +76,7 @@ def my_test_generator(subject_indices):
         # idx_frame_indics = range(num_subjects)
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
         # idx_frame_indics = range(len(relevant_keys))
-        idx_frame_indics= range(4,5)
+        idx_frame_indics= range(4,6)
         for idx_frame in idx_frame_indics:
             f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
             frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
@@ -252,8 +252,8 @@ print('Training done.')
 y_pred = model.predict(test_batch)
 
 test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
-plt.figure(1)
-plt.imshow(test_pred)
+# plt.figure(1)
+# plt.imshow(test_pred)
 
 #Put a 0.5 threshold on the prediction
 test_pred_shape = test_pred.shape
@@ -273,21 +273,27 @@ np.savetxt('./pred_masks/pred_mask.txt', tf.image.convert_image_dtype(test_pred_
 # l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
 # l1_dataset = 'label_%04d_%03d_01' % (iSbj, frame_indic)
 # l2_dataset = 'label_%04d_%03d_02' % (iSbj, frame_indic)
-l0_dataset = 'label_%04d_%03d_00' % (191, 4)
-l1_dataset = 'label_%04d_%03d_01' % (191, 4)
-l2_dataset = 'label_%04d_%03d_02' % (191, 4)
 
-label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
-label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
-sum_of_labs = label0+label1+label2
+maj_label = tf.Variable(tf.zeros([sum_of_labs_shape[0],sum_of_labs_shape[1],2], tf.int32))
+stck_sum_of_labs = tf.Variable(tf.zeros([sum_of_labs_shape[0],sum_of_labs_shape[1],2], tf.int32))
 
-sum_of_labs_shape = sum_of_labs.shape
-maj_label = tf.Variable(tf.zeros([sum_of_labs_shape[0],sum_of_labs_shape[1]], tf.int32))
-for i in range (sum_of_labs_shape[0]):
-    for j in range (sum_of_labs_shape[1]):
-        if sum_of_labs[i][j] >= 2:
-            maj_label[i,j].assign(1)
+for ind in range(4,6):
+# l0_dataset = 'label_%04d_%03d_00' % (191, 4)
+# l1_dataset = 'label_%04d_%03d_01' % (191, 4)
+# l2_dataset = 'label_%04d_%03d_02' % (191, 4)
+    l0_dataset = 'label_%04d_%03d_00' % (191, ind)
+    l1_dataset = 'label_%04d_%03d_01' % (191, ind)
+    l2_dataset = 'label_%04d_%03d_02' % (191, ind)
+
+    label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+    label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
+    label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+    sum_of_labs = label0+label1+label2
+    
+    for i in range (58):
+        for j in range (52):
+            if sum_of_labs[i][j] >= 2:
+                maj_label[i,j,ind-4].assign(1)
 
 #Image the corresponding frame and label
 test_frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0191_004' ),255)
