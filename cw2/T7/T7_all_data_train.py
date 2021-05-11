@@ -9,7 +9,7 @@ from tensorflow.keras.applications.vgg16 import VGG16
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 4
+num_subjects = 180
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -22,45 +22,58 @@ training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
 test_indices = range(191,192)
 
-t_b_size = 20
+t_b_size = 45
 
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
-        # idx_frame_indics = range(num_subjects)
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-        idx_frame_indics = range(len(relevant_keys))
-        for idx_frame in idx_frame_indics:
-            f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
+        if len(relevant_keys) > 1: #case 64 only has 1 frame
+            frame_indic = np.random.randint(0,high=len(relevant_keys)-1)
+            f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
             frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-            l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
+
+            l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
             label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-            yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
+            l1_dataset = 'label_%04d_%03d_01' % (iSbj, frame_indic)
+            label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
+            l2_dataset = 'label_%04d_%03d_02' % (iSbj, frame_indic)
+            label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
 
-def my_data_generator(subject_indices):
-    for iSbj in subject_indices:
-        relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-        idx_frame_indics = range(len(relevant_keys))
-        for idx_frame in idx_frame_indics:
-            if len(relevant_keys) > 1: #case 64 only has 1 frame
-                f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-                frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+            is0 = tf.math.reduce_max(label0)
+            is1 = tf.math.reduce_max(label1)
+            is2 = tf.math.reduce_max(label2)
+            
+            #Does it contain prostate or not?
+            lab = 0
+            if is0+is1+is2 >= 2:
+                lab = 1
+            yield(tf.expand_dims(frame, axis=2),lab)
 
-                l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
-                label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-                l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
-                label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
-                l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
-                label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+# def my_data_generator(subject_indices):
+#     for iSbj in subject_indices:
+#         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
+#         idx_frame_indics = range(len(relevant_keys))
+#         for idx_frame in idx_frame_indics:
+#             if len(relevant_keys) > 1: #case 64 only has 1 frame
+#                 f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
+#                 frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
 
-                is0 = tf.math.reduce_max(label0)
-                is1 = tf.math.reduce_max(label1)
-                is2 = tf.math.reduce_max(label2)
+#                 l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
+#                 label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+#                 l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
+#                 label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
+#                 l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
+#                 label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+
+#                 is0 = tf.math.reduce_max(label0)
+#                 is1 = tf.math.reduce_max(label1)
+#                 is2 = tf.math.reduce_max(label2)
                 
-                #Does it contain prostate or not?
-                lab = 0
-                if is0+is1+is2 >= 2:
-                    lab = 1
-                yield(tf.expand_dims(frame, axis=2),lab)
+#                 #Does it contain prostate or not?
+#                 lab = 0
+#                 if is0+is1+is2 >= 2:
+#                     lab = 1
+#                 yield(tf.expand_dims(frame, axis=2),lab)
 
 def my_test_generator(subject_indices):
     for iSbj in subject_indices:
@@ -98,6 +111,8 @@ model = tf.keras.Sequential()
 for layer in VGG_model.layers[:-1]:
     model.add(layer)
 
+model.add(tf.keras.layers.BatchNormalization())
+model.add(tf.keras.layers.Dropout(0.5))
 model.add(tf.keras.layers.Flatten())
 model.add(tf.keras.layers.Dense(1,activation='sigmoid'))
 
@@ -113,7 +128,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
 class_weight = {0: 3639.,
                 1: 1147.}             
 
-history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch, class_weight=class_weight)
+history_callback = model.fit(training_batch, epochs=int(600),validation_data = validation_batch, class_weight=class_weight)
 
 print('Training done.')
 

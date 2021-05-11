@@ -11,20 +11,9 @@ keys = f.keys()
 
 filename = './data/dataset70-200.h5'
 
-# for iSbj in subject_indices:
-#     # idx_frame_indics = range(num_subjects)
-#     relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-#     idx_frame_indics = range(len(relevant_keys))
-#     for idx_frame in idx_frame_indics:
-#         f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-#         frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-#         l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
-#         label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-#         yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
-
 lab = 0
 count = 0
-for iSbj in range(180):
+for iSbj in range(191,192):
     relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
     idx_frame_indics = range(len(relevant_keys))
     for idx_frame in idx_frame_indics:
@@ -45,8 +34,11 @@ for iSbj in range(180):
             
             #Does it contain prostate or not?
             count = count + 1
+            is_it = 0
             if is0+is1+is2 >= 2: #yes loop
                 lab = lab + 1
+                is_it = 1
+            print(is_it)
 print(count)
 print(lab)           
             
