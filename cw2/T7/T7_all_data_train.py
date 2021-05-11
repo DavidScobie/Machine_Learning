@@ -9,7 +9,7 @@ from tensorflow.keras.applications.vgg16 import VGG16
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 180
+num_subjects = 45
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -28,7 +28,7 @@ def my_data_generator(subject_indices):
     for iSbj in subject_indices:
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
         if len(relevant_keys) > 1: #case 64 only has 1 frame
-            frame_indic = np.random.randint(0,high=len(relevant_keys)-1)
+            frame_indic = np.random.randint(0,high=len(relevant_keys))
             f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
             frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
 
@@ -49,42 +49,16 @@ def my_data_generator(subject_indices):
                 lab = 1
             yield(tf.expand_dims(frame, axis=2),lab)
 
-# def my_data_generator(subject_indices):
-#     for iSbj in subject_indices:
-#         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-#         idx_frame_indics = range(len(relevant_keys))
-#         for idx_frame in idx_frame_indics:
-#             if len(relevant_keys) > 1: #case 64 only has 1 frame
-#                 f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-#                 frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-
-#                 l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
-#                 label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-#                 l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
-#                 label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
-#                 l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
-#                 label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
-
-#                 is0 = tf.math.reduce_max(label0)
-#                 is1 = tf.math.reduce_max(label1)
-#                 is2 = tf.math.reduce_max(label2)
-                
-#                 #Does it contain prostate or not?
-#                 lab = 0
-#                 if is0+is1+is2 >= 2:
-#                     lab = 1
-#                 yield(tf.expand_dims(frame, axis=2),lab)
 
 def my_test_generator(subject_indices):
     for iSbj in subject_indices:
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-        if len(relevant_keys) > 1: #case 64 only has 1 frame
-            all_frame_indics = len(relevant_keys)-1
-            for frame_indic in range(all_frame_indics):
-                f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
-                print(f_dataset)
-                frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-                yield(tf.expand_dims(frame, axis=2))
+        all_frame_indics = len(relevant_keys)
+        for frame_indic in range(all_frame_indics):
+            f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
+            frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+            yield(tf.expand_dims(frame, axis=2))
+
 
 training_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=training_indices), 
                                          output_types = (tf.float32, tf.int32),
@@ -128,25 +102,71 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
 class_weight = {0: 3639.,
                 1: 1147.}             
 
-history_callback = model.fit(training_batch, epochs=int(600),validation_data = validation_batch, class_weight=class_weight)
+history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch, class_weight=class_weight)
 
 print('Training done.')
 
 y_pred = model.predict(test_batch)
 print(y_pred)
 
+#apply binary threshold on predictions
+y_pred_binary = np.zeros((len(y_pred), 1))
+for i in range(len(y_pred)):
+    if y_pred[i] >= 0.5:
+        y_pred_binary[i] = 1
+
+print(y_pred_binary)
+
+#what are the corresponding true values for the test set?
+y_true = []
+for iSbj in range(191,192):
+    relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
+    idx_frame_indics = range(len(relevant_keys))
+    for idx_frame in idx_frame_indics:
+        if len(relevant_keys) > 1: #case 64 only has 1 frame
+            f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
+            frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+
+            l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
+            label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+            l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
+            label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
+            l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
+            label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+
+            is0 = tf.math.reduce_max(label0)
+            is1 = tf.math.reduce_max(label1)
+            is2 = tf.math.reduce_max(label2)
+            
+            #Does it contain prostate or not?
+            is_it = 0
+            if is0+is1+is2 >= 2: #yes loop
+                is_it = 1
+            y_true.append(is_it)
+
+np_ar_true = np.asarray(y_true)
+match = np.zeros((len(y_pred), 1))
+
+for i in range(len(y_pred)):
+    if y_pred_binary[i] == np_ar_true[i]:
+        match[i] = 1
+
+print(match)
+acc = (np.sum(match))/(len(match))
+print(acc)
+
 #saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-np.savetxt('./loss/T7_all_data_train_l_h.txt', numpy_loss_history, delimiter=",")
+np.savetxt('./loss/_l_h.txt', numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt('./loss/T7_all_data_train_v_l_h.txt',numpy_val_loss_history, delimiter=",")
+np.savetxt('./loss/_v_l_h.txt',numpy_val_loss_history, delimiter=",")
 
 #saving predictions
-np.savetxt('./class_preds/T7_all_data_train_class_pred.txt',y_pred, delimiter=",")
+np.savetxt('./class_preds/class_pred.txt',y_pred, delimiter=",")
 
 '''
 #image test frame
