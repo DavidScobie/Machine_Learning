@@ -90,18 +90,6 @@ model.add(tf.keras.layers.Dense(1,activation='sigmoid'))
 
 print(model.summary())
 
-# def keras_custom_loss_function(y_actual,y_predicted):
-#     y_predicted = tf.cast(y_predicted,tf.float32)
-#     y_actual = tf.cast(y_actual,tf.float32)
-#     print(y_actual)
-#     print(tf.reshape(y_actual,[]))
-#     first_term = y_actual*(kb.log(y_predicted))
-#     second_term = (1-y_actual)*(kb.log(1-y_predicted))
-#     if tf.reshape(y_actual,[]) == 0: #Only works if batch size = 1
-#         return -(156/44)*(1/t_b_size)*kb.sum(first_term+second_term)
-#     return -(1)*(1/t_b_size)*kb.sum(first_term+second_term)
-
-
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
             #   loss='sparse_categorical_crossentropy',
             #   metrics=['SparseCategoricalAccuracy'])
@@ -109,10 +97,10 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               loss = 'binary_crossentropy',
               metrics=['binary_crossentropy'])
 
-class_weight = {0: 3639/1147,
-                1: 1.}             
+class_weight = {0: 3639.,
+                1: 1147.}             
 
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch, class_weight=class_weight)
+history_callback = model.fit(training_batch, epochs=int(300),validation_data = validation_batch, class_weight=class_weight)
 
 print('Training done.')
 
@@ -122,15 +110,15 @@ print(y_pred)
 #saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-np.savetxt('./loss/b_siz_1_weight_loss_l_h.txt', numpy_loss_history, delimiter=",")
+np.savetxt('./loss/b_siz_20_weight_loss_l_h.txt', numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt('./loss/b_siz_1_weight_loss_v_l_h.txt',numpy_val_loss_history, delimiter=",")
+np.savetxt('./loss/b_siz_20_weight_loss_v_l_h.txt',numpy_val_loss_history, delimiter=",")
 
 #saving predictions
-np.savetxt('./class_preds/b_siz_1_weight_loss_class_pred.txt',y_pred, delimiter=",")
+np.savetxt('./class_preds/b_siz_20_weight_loss_class_pred.txt',y_pred, delimiter=",")
 
 '''
 #image test frame
