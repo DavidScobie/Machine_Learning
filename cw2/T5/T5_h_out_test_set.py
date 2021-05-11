@@ -8,7 +8,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 180
+num_subjects = 4
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -263,27 +263,53 @@ for i in range (test_pred_shape[0]):
         if test_pred[i][j] >= 0.5:
             test_pred_mask[i,j].assign(1)
 
-plt.figure(2)
-plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32)) 
+plt.figure(2) #image the binary mask
+test_pred_mask = tf.image.convert_image_dtype(test_pred_mask, tf.int32)
+plt.imshow(test_pred_mask) 
 np.savetxt('./pred_masks/pred_mask.txt', tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
 
+
+#need to take the consensus label as truth
+# l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
+# l1_dataset = 'label_%04d_%03d_01' % (iSbj, frame_indic)
+# l2_dataset = 'label_%04d_%03d_02' % (iSbj, frame_indic)
+l0_dataset = 'label_%04d_%03d_00' % (191, 4)
+l1_dataset = 'label_%04d_%03d_01' % (191, 4)
+l2_dataset = 'label_%04d_%03d_02' % (191, 4)
+
+label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
+label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+sum_of_labs = label0+label1+label2
+
+sum_of_labs_shape = sum_of_labs.shape
+maj_label = tf.Variable(tf.zeros([sum_of_labs_shape[0],sum_of_labs_shape[1]], tf.int32))
+for i in range (sum_of_labs_shape[0]):
+    for j in range (sum_of_labs_shape[1]):
+        if sum_of_labs[i][j] >= 2:
+            maj_label[i,j].assign(1)
+
 #Image the corresponding frame and label
-test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_00' ),255)
-test_label_1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_01' ),255)
-test_label_2 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_02' ),255)
 test_frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0191_004' ),255)
-test_label_0_img = tf.image.convert_image_dtype(test_label_0, tf.float32)
 test_frame_img = tf.image.convert_image_dtype(test_frame, tf.float32)
-test_label_1_img = tf.image.convert_image_dtype(test_label_1, tf.float32)
-test_label_2_img = tf.image.convert_image_dtype(test_label_2, tf.float32)
 plt.figure(3)
-plt.imshow(test_label_0_img)
-plt.figure(4)
-plt.imshow(test_label_1_img)
-plt.figure(5)
-plt.imshow(test_label_2_img)
-plt.figure(6)
 plt.imshow(test_frame_img)
+maj_label_img = tf.image.convert_image_dtype(maj_label, tf.int32)
+plt.figure(4)
+plt.imshow(maj_label_img)
+
+print(maj_label_img)
+print(test_pred_mask)
+
+#find out if the points are the same on both (for the mask)
+match = tf.Variable(tf.zeros([58,52], tf.int32))
+for i in range (58):
+    for j in range (52):
+        if maj_label_img[i][j] == test_pred_mask[i][j]:
+            match[i,j].assign(1)
+print(match)
+print(tf.math.reduce_sum(match))
+print(tf.math.reduce_sum(match)/(58*52))
 
 #saving training loss logs
 loss_history = history_callback.history["loss"]
@@ -297,4 +323,4 @@ numpy_val_loss_history = np.array(val_loss_history)
 val_loss_fname = './loss/val_loss_history.txt' 
 np.savetxt(val_loss_fname,numpy_val_loss_history, delimiter=",")
 
-plt.show()
+# plt.show()
