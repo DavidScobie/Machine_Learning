@@ -1,11 +1,8 @@
-import os
-import random
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as kb
 import tensorflow as tf
 import numpy as np 
 import h5py
-import random as rd
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 f = h5py.File('./data/dataset70-200.h5','r')
@@ -19,15 +16,7 @@ subject_indices = range(num_subjects)
 #I think this needs to be by 3 (or maybe 4) as we have a stack of 1 frame and 3 labels in the generator 
 frame_size = np.array([58,52,1])
 
-#image a slice
-frame1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_00' ),255)
-# frame1 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0000_000' ),255)
-img = tf.image.convert_image_dtype(frame1, tf.float32)
-plt.imshow(img)
-# plt.show()
-
 ##MY DATA GENERATOR
-
 validation_split = 0.25
 num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
@@ -37,8 +26,8 @@ test_indices = range(191,192)
 
 #Define augmentation image data generator
 datagen=ImageDataGenerator(rotation_range=90,
-                           horizontal_flip=True,
-                           vertical_flip=True)
+                        horizontal_flip=True,
+                        vertical_flip=True)
 
 #set training batch size
 t_b_size = 2
@@ -48,40 +37,39 @@ def my_data_generator(subject_indices):
         # idx_frame_indics = range(num_subjects)
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
 
-        # idx_frame_indics = range(len(relevant_keys))
-        # for idx_frame in idx_frame_indics:
+        if len(relevant_keys) > 1: #case 64 only has 1 frame
+            #Instead of for loop through all, just do 1 frame
+            frame_indic = np.random.randint(0,high=len(relevant_keys)) 
 
-        #Instead of for loop through all, just do 1 frame
-        frame_indic = rd.randint(0,len(relevant_keys)-1)
+            f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
+            frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+            
+            #randomly pick one label from the 3
+            label_indic = np.random.randint(0,high=2) 
+            lab_dataset = 'label_%04d_%03d_%02d' % (iSbj, frame_indic, label_indic)
+            label = tf.cast(tf.keras.utils.HDF5Matrix(filename, lab_dataset),dtype=tf.float32)
+            
+            #data augmentation
+            ran_num = np.random.randint(1,high=100)
+            if ran_num <= 20:
+                    # Add the image to a batch
+                image = tf.expand_dims(frame, 0)
+                image = tf.expand_dims(image, 3)
+                mask = tf.expand_dims(label, 0)
+                mask = tf.expand_dims(mask, 3)
 
-        f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
-        frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-        
-        #randomly pick one label from the 3
-        label_indic = rd.randint(0,2)
-        l0_dataset = 'label_%04d_%03d_%02d' % (iSbj, frame_indic, label_indic)
-        label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-        
-        #data augmentation
-        ran_num = rd.randint(1,100)
-        if ran_num <= 20:
-                # Add the image to a batch
-            image = tf.expand_dims(frame, 0)
-            image = tf.expand_dims(image, 3)
-            mask = tf.expand_dims(label0, 0)
-            mask = tf.expand_dims(mask, 3)
+                seed = np.random.randint(10,high=100000)
+                imagegen=datagen.flow(image,batch_size=t_b_size,seed=seed)
+                imagegen2=datagen.flow(mask,batch_size=t_b_size,seed=seed)
 
-            seed = rd.randint(10,100000)
-            imagegen=datagen.flow(image,batch_size=t_b_size,seed=seed)
-            imagegen2=datagen.flow(mask,batch_size=t_b_size,seed=seed)
+                x=imagegen.next()
+                y=imagegen2.next()
 
-            x=imagegen.next()
-            y=imagegen2.next()
+                frame = tf.squeeze(tf.convert_to_tensor(x[0]))
+                label0 = tf.squeeze(tf.convert_to_tensor(y[0]))
 
-            frame = tf.squeeze(tf.convert_to_tensor(x[0]))
-            label0 = tf.squeeze(tf.convert_to_tensor(y[0]))
+            yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label, axis=2))
 
-        yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
 
 def my_test_generator(subject_indices):
     for iSbj in subject_indices:
@@ -95,16 +83,16 @@ def my_test_generator(subject_indices):
             yield(tf.expand_dims(frame, axis=2))
 
 training_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=training_indices), 
-                                         output_types = (tf.float32, tf.float32),
-                                         output_shapes = (frame_size, frame_size))
+                                        output_types = (tf.float32, tf.float32),
+                                        output_shapes = (frame_size, frame_size))
 
 validation_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=validation_indices), 
-                                         output_types = (tf.float32, tf.float32),
-                                         output_shapes = (frame_size, frame_size))
+                                        output_types = (tf.float32, tf.float32),
+                                        output_shapes = (frame_size, frame_size))
 
 test_dataset = tf.data.Dataset.from_generator(generator = lambda: my_test_generator(subject_indices=test_indices), 
-                                         output_types = (tf.float32),
-                                         output_shapes = (frame_size))
+                                        output_types = (tf.float32),
+                                        output_shapes = (frame_size))
 
 
 print(training_dataset)
@@ -251,19 +239,17 @@ def keras_custom_loss_function(y_actual,y_predicted):
 
 
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
-              loss = keras_custom_loss_function,
+            loss = keras_custom_loss_function,
             #   loss = 'MeanSquaredError',
-              metrics=['MeanAbsoluteError'])
+            metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
 history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
+
 print('Training done.')
 
 #try a frame to test the model
-# test_data = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0050_000' ),255)
-print(test_batch)
 y_pred = model.predict(test_batch)
-print(tf.shape(y_pred))
 
 test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
 plt.figure(1)
@@ -278,8 +264,8 @@ for i in range (test_pred_shape[0]):
             test_pred_mask[i,j].assign(1)
 
 plt.figure(2)
-plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32))
-np.savetxt(os.path.join('pred_masks', 'pred_mask.txt'), tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
+plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32)) 
+np.savetxt('./pred_masks/pred_mask.txt', tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
 
 #Image the corresponding frame and label
 test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_00' ),255)
@@ -302,11 +288,13 @@ plt.imshow(test_frame_img)
 #saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-np.savetxt(os.path.join('loss', 'loss_history.txt'), numpy_loss_history, delimiter=",")
+loss_fname = './loss/loss_history.txt' 
+np.savetxt(loss_fname, numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt(os.path.join('loss', 'val_loss_history.txt'), numpy_val_loss_history, delimiter=",")
+val_loss_fname = './loss/val_loss_history.txt' 
+np.savetxt(val_loss_fname,numpy_val_loss_history, delimiter=",")
 
 plt.show()
