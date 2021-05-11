@@ -22,7 +22,7 @@ training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
 test_indices = range(191,192)
 
-t_b_size = 1
+t_b_size = 20
 
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
@@ -91,40 +91,28 @@ model.add(tf.keras.layers.Dense(1,activation='sigmoid'))
 print(model.summary())
 
 # def keras_custom_loss_function(y_actual,y_predicted):
-#     eps = 1e-6
-#     numer = 2*kb.sum(y_predicted*y_actual)
-#     denom = eps + kb.sum(y_predicted) + kb.sum(y_actual)
-#     return 1 - kb.mean(numer/denom)
+#     y_predicted = tf.cast(y_predicted,tf.float32)
+#     y_actual = tf.cast(y_actual,tf.float32)
+#     print(y_actual)
+#     print(tf.reshape(y_actual,[]))
+#     first_term = y_actual*(kb.log(y_predicted))
+#     second_term = (1-y_actual)*(kb.log(1-y_predicted))
+#     if tf.reshape(y_actual,[]) == 0: #Only works if batch size = 1
+#         return -(156/44)*(1/t_b_size)*kb.sum(first_term+second_term)
+#     return -(1)*(1/t_b_size)*kb.sum(first_term+second_term)
 
-def keras_custom_loss_function(y_actual,y_predicted):
-    y_predicted = tf.cast(y_predicted,tf.float32)
-    y_actual = tf.cast(y_actual,tf.float32)
-    print(y_actual)
-    print(tf.cast(y_actual,tf.float32))
-    # coef = 1
-    # coef = tf.cast(coef,tf.float32)
-    # if y_actual == 0:
-    #     coef = 156/44
-    
-    # tf.math.scalar_mul(
-    # coef, x, name=None
-    # )
 
-    first_term = y_actual*(kb.log(y_predicted))
-    second_term = (1-y_actual)*(kb.log(1-y_predicted))
-    if tf.reshape(y_actual,[]) == 0:
-        return -(156/44)*(1/t_b_size)*kb.sum(first_term+second_term)
-    return -(1)*(1/t_b_size)*kb.sum(first_term+second_term)
-    # return tf.math.scalar_mul(coef,-1*(1/t_b_size)*kb.sum(first_term+second_term))
-
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
             #   loss='sparse_categorical_crossentropy',
             #   metrics=['SparseCategoricalAccuracy'])
-              loss=keras_custom_loss_function,
+            #   loss=keras_custom_loss_function,
+              loss = 'binary_crossentropy',
               metrics=['binary_crossentropy'])
-              
 
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
+class_weight = {0: 3639/1147,
+                1: 1.}             
+
+history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch, class_weight=class_weight)
 
 print('Training done.')
 
@@ -134,15 +122,15 @@ print(y_pred)
 #saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-np.savetxt('./loss/loss_history.txt', numpy_loss_history, delimiter=",")
+np.savetxt('./loss/b_siz_1_weight_loss_l_h.txt', numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt('./loss/val_loss_history.txt',numpy_val_loss_history, delimiter=",")
+np.savetxt('./loss/b_siz_1_weight_loss_v_l_h.txt',numpy_val_loss_history, delimiter=",")
 
 #saving predictions
-np.savetxt('./class_preds/class_pred.txt',y_pred, delimiter=",")
+np.savetxt('./class_preds/b_siz_1_weight_loss_class_pred.txt',y_pred, delimiter=",")
 
 '''
 #image test frame
