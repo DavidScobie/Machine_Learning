@@ -22,7 +22,7 @@ num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
 training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
-test_indices = range(191,192)
+test_indices = range(191,193)
 
 #Define augmentation image data generator
 datagen=ImageDataGenerator(rotation_range=90,
@@ -243,27 +243,28 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
             metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(4),validation_data = validation_batch)
 
 print('Training done.')
 
 #try a frame to test the model
 y_pred = model.predict(test_batch)
 
-print(y_pred)
 test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
+print(test_pred)
+
 test_pred = tf.transpose(test_pred, perm=[1, 2, 0])
 print(test_pred)
-# plt.figure(1)
-# plt.imshow(test_pred)
 
 #Put a 0.5 threshold on the prediction
-test_pred_mask = tf.Variable(tf.zeros([58,52,2], tf.int32))
-for ind in range(4,6):
+test_pred_mask = tf.Variable(tf.zeros([58,52,4], tf.int32))
+for ind in range(4):
     for i in range (58):
         for j in range (52):
-            if test_pred[i][j][ind-4] >= 0.5:
-                test_pred_mask[i,j,ind-4].assign(1)
+            if test_pred[i][j][ind] >= 0.5:
+                test_pred_mask[i,j,ind].assign(1)
+    plt.figure(ind+4)
+    plt.imshow(test_pred_mask[:,:,ind]) 
 
 # plt.figure(2) #image the binary mask
 # test_pred_mask = tf.image.convert_image_dtype(test_pred_mask, tf.int32)
@@ -274,29 +275,37 @@ for ind in range(4,6):
 #Dealing with test data
 
 
-maj_label = tf.Variable(tf.zeros([58,52,2], tf.int32))
+maj_label = tf.Variable(tf.zeros([58,52,4], tf.int32))
 # stck_sum_of_labs = tf.Variable(tf.zeros([58,52,2], tf.int32))
 
-for ind in range(4,6):
-    #need to take the consensus label as truth
-    l0_dataset = 'label_%04d_%03d_00' % (191, ind)
-    l1_dataset = 'label_%04d_%03d_01' % (191, ind)
-    l2_dataset = 'label_%04d_%03d_02' % (191, ind)
+count = -1
+for subj in test_indices:
+    for ind in range(4,6):
+        #need to take the consensus label as truth
+        l0_dataset = 'label_%04d_%03d_00' % (subj, ind)
+        l1_dataset = 'label_%04d_%03d_01' % (subj, ind)
+        l2_dataset = 'label_%04d_%03d_02' % (subj, ind)
 
-    label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-    label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
-    label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
-    print(tf.math.reduce_max(label0))
-    print(tf.math.reduce_max(label1))
-    print(tf.math.reduce_max(label2))
-    sum_of_labs = label0+label1+label2
-    
-    for i in range (58):
-        for j in range (52):
-            if sum_of_labs[i][j] >= 2:
-                maj_label[i,j,ind-4].assign(1)
-    print(maj_label)
-    print(tf.math.reduce_max(maj_label))
+        label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+        label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
+        label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+        print(tf.math.reduce_max(label0))
+        print(tf.math.reduce_max(label1))
+        print(tf.math.reduce_max(label2))
+        sum_of_labs = label0+label1+label2
+
+        count = count + 1
+        
+        
+        for i in range (58):
+            for j in range (52):
+                if sum_of_labs[i][j] >= 2:
+                    maj_label[i,j,count].assign(1)
+        print(maj_label)
+        print(tf.math.reduce_max(maj_label))
+
+        plt.figure(count)
+        plt.imshow(maj_label[:,:,count]) 
 
 #Image the corresponding frame and label
 # test_frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0191_004' ),255)
@@ -315,16 +324,19 @@ print(test_pred_mask)
 print(maj_label)
 
 #find out if the points are the same on both (for the mask)
-match = tf.Variable(tf.zeros([58,52,2], tf.int32))
-for ind in range(4,6):
+match = tf.Variable(tf.zeros([58,52,4], tf.int32))
+for ind in range(4):
     for i in range (58):
         for j in range (52):
-            if maj_label[i][j][ind-4] == test_pred_mask[i][j][ind-4]:
+            if maj_label[i][j][ind] == test_pred_mask[i][j][ind]:
             # if maj_label[i,j,ind-4] == test_pred_mask[i,j,ind-4]:
-                match[i,j,ind-4].assign(1)
+                match[i,j,ind].assign(1)
+    plt.figure(ind+8)
+    plt.imshow(match[:,:,ind]) 
+    
 print(match)
 print(tf.math.reduce_sum(match))
-print(tf.math.reduce_sum(match)/(58*52*2))
+print(tf.math.reduce_sum(match)/(58*52*4))
 
 #saving training loss logs
 loss_history = history_callback.history["loss"]
@@ -338,4 +350,5 @@ numpy_val_loss_history = np.array(val_loss_history)
 val_loss_fname = './loss/val_loss_history.txt' 
 np.savetxt(val_loss_fname,numpy_val_loss_history, delimiter=",")
 
-# plt.show()
+plt.show()
+
