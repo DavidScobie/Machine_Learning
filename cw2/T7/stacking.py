@@ -13,7 +13,7 @@ num_subjects = 4
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
-frame_size = np.array([58,52,1])
+frame_size = np.array([58,52,3])
 
 validation_split = 0.25
 num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
@@ -24,6 +24,24 @@ test_indices = range(199,200)
 
 t_b_size = 45
 
+f_dataset = 'frame_0001_001'
+frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+print(frame)
+
+stck = tf.stack([frame, frame, frame])
+print(stck)
+
+permuted = tf.transpose(stck, perm=[1, 2, 0])
+print(permuted)
+
+
+##################
+
+
+
+
+
+
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
@@ -31,6 +49,10 @@ def my_data_generator(subject_indices):
             frame_indic = np.random.randint(0,high=len(relevant_keys))
             f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
             frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+
+            #attempting to stack the frame to get 3 channels
+            stck = tf.stack([frame, frame, frame])
+            permuted = tf.transpose(stck, perm=[1, 2, 0])
 
             l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
             label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
@@ -47,7 +69,7 @@ def my_data_generator(subject_indices):
             lab = 0
             if is0+is1+is2 >= 2:
                 lab = 1
-            yield(tf.expand_dims(frame, axis=2),lab)
+            yield(permuted,lab)
 
 
 def my_test_generator(subject_indices):
@@ -57,7 +79,12 @@ def my_test_generator(subject_indices):
         for frame_indic in range(all_frame_indics):
             f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
             frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-            yield(tf.expand_dims(frame, axis=2))
+            
+            #attempting to stack the frame to get 3 channels
+            stck = tf.stack([frame, frame, frame])
+            permuted = tf.transpose(stck, perm=[1, 2, 0])
+
+            yield(permuted)
 
 
 training_dataset = tf.data.Dataset.from_generator(generator = lambda: my_data_generator(subject_indices=training_indices), 
@@ -78,7 +105,7 @@ validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(t_b_size)
 test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
 # test_batch = validation_dataset.shuffle(buffer_size=1024).batch(1)
 
-VGG_model = VGG16(weights = 'imagenet', include_top = False, input_shape = [58,52,1])
+VGG_model = VGG16(weights = 'imagenet' , include_top = False, input_shape = [58,52,3])
 
 model = tf.keras.Sequential()
 

@@ -257,7 +257,7 @@ test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
 
 #Put a 0.5 threshold on the prediction
 test_pred_shape = test_pred.shape
-test_pred_mask = tf.Variable(tf.zeros([test_pred_shape[0],test_pred_shape[1]], tf.int32))
+test_pred_mask = tf.Variable(tf.zeros([test_pred_shape[0],test_pred_shape[1],2], tf.int32))
 for i in range (test_pred_shape[0]):
     for j in range (test_pred_shape[1]):
         if test_pred[i][j] >= 0.5:
