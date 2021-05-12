@@ -22,7 +22,7 @@ num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
 training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
-test_indices = range(180,200)
+test_indices = range(198,200)
 
 #Define augmentation image data generator
 datagen=ImageDataGenerator(rotation_range=90,
@@ -257,37 +257,19 @@ test_pred = tf.transpose(test_pred, perm=[1, 2, 0])
 # print(test_pred)
 
 #Put a 0.5 threshold on the prediction
-test_pred_mask = tf.Variable(tf.zeros([58,52,551], tf.int32))
-for ind in range(551):
+test_pred_mask = tf.Variable(tf.zeros([58,52,45], tf.int32))
+for ind in range(45):
     for i in range (58):
         for j in range (52):
             if test_pred[i][j][ind] >= 0.5:
                 test_pred_mask[i,j,ind].assign(1)
-    # plt.figure(ind+4)
-    # plt.imshow(test_pred_mask[:,:,ind]) 
 
-# plt.figure(2) #image the binary mask
-# test_pred_mask = tf.image.convert_image_dtype(test_pred_mask, tf.int32)
-# plt.imshow(test_pred_mask) 
-# np.savetxt('./pred_masks/pred_mask.txt', tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
-
-
+print('done 1st loop')
 #Dealing with test data
 
 
-maj_label = tf.Variable(tf.zeros([58,52,551], tf.int32))
-# stck_sum_of_labs = tf.Variable(tf.zeros([58,52,2], tf.int32))
+maj_label = tf.Variable(tf.zeros([58,52,45], tf.int32))
 
-
-# for iSbj in subject_indices:
-#     # idx_frame_indics = range(num_subjects)
-#     relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-#     idx_frame_indics = range(len(relevant_keys))
-#     # idx_frame_indics= range(4,6)
-#     for idx_frame in idx_frame_indics:
-#         f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-#         frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
-#         yield(tf.expand_dims(frame, axis=2))
 
 
 count = -1
@@ -303,9 +285,7 @@ for subj in test_indices:
         label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
         label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
         label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
-        # print(tf.math.reduce_max(label0))
-        # print(tf.math.reduce_max(label1))
-        # print(tf.math.reduce_max(label2))
+
         sum_of_labs = label0+label1+label2
 
         count = count + 1
@@ -315,42 +295,23 @@ for subj in test_indices:
             for j in range (52):
                 if sum_of_labs[i][j] >= 2:
                     maj_label[i,j,count].assign(1)
-        # print(maj_label)
-        # print(tf.math.reduce_max(maj_label))
 
-        # plt.figure(count)
-        # plt.imshow(maj_label[:,:,count]) 
+print('done 2nd loop')
 
-#Image the corresponding frame and label
-# test_frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0191_004' ),255)
-# test_frame_img = tf.image.convert_image_dtype(test_frame, tf.float32)
-# plt.figure(3)
-# plt.imshow(test_frame_img)
 maj_label = tf.image.convert_image_dtype(maj_label, tf.int32)
-# plt.figure(4)
-# plt.imshow(maj_label_img)
-
-
-
-# print(maj_label_img)
-# print(test_pred_mask)
-
-# print(maj_label)
 
 #find out if the points are the same on both (for the mask)
-match = tf.Variable(tf.zeros([58,52,551], tf.int32))
-for ind in range(551):
+match = tf.Variable(tf.zeros([58,52,45], tf.int32))
+for ind in range(45):
     for i in range (58):
         for j in range (52):
             if maj_label[i][j][ind] == test_pred_mask[i][j][ind]:
-            # if maj_label[i,j,ind-4] == test_pred_mask[i,j,ind-4]:
+            
                 match[i,j,ind].assign(1)
-    # plt.figure(ind+8)
-    # plt.imshow(match[:,:,ind]) 
-    
-# print(match)
-# print(tf.math.reduce_sum(match))
-print(tf.math.reduce_sum(match)/(58*52*551))
+
+print('done 3rd loop') 
+
+print(tf.math.reduce_sum(match)/(58*52*45))
 
 #saving training loss logs
 loss_history = history_callback.history["loss"]
@@ -364,5 +325,5 @@ numpy_val_loss_history = np.array(val_loss_history)
 val_loss_fname = './loss/val_loss_history.txt' 
 np.savetxt(val_loss_fname,numpy_val_loss_history, delimiter=",")
 
-plt.show()
+# plt.show()
 
