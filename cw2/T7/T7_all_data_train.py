@@ -9,7 +9,7 @@ from tensorflow.keras.applications.vgg16 import VGG16
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 4
+num_subjects = 180
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -20,9 +20,14 @@ num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
 training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
-test_indices = range(199,200)
+test_indices = range(180,200)
 
-t_b_size = 1
+t_b_size = 135
+
+#Define augmentation image data generator
+datagen=ImageDataGenerator(rotation_range=90,
+                        horizontal_flip=True,
+                        vertical_flip=True)
 
 def my_data_generator(subject_indices):
     for iSbj in subject_indices:
@@ -32,6 +37,21 @@ def my_data_generator(subject_indices):
             if len(relevant_keys) > 1: #case 64 only has 1 frame
                 f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
                 frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+
+                #data augmentation
+                ran_num = np.random.randint(1,high=100)  
+                if ran_num <= 20:
+                    # Add the image to a batch
+                    image = tf.expand_dims(frame, 0)
+                    image = tf.expand_dims(image, 3)
+
+                    seed = np.random.randint(10,high=100000)
+                    imagegen=datagen.flow(image,batch_size=t_b_size,seed=seed)
+
+                    x=imagegen.next()
+
+                    frame = tf.squeeze(tf.convert_to_tensor(x[0]))
+
 
                 #attempting to stack the frame to get 3 channels
 
@@ -56,9 +76,9 @@ def my_data_generator(subject_indices):
 def my_test_generator(subject_indices):
     for iSbj in subject_indices:
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-        all_frame_indics = len(relevant_keys)
-        for frame_indic in range(all_frame_indics):
-            f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
+        idx_frame_indics = range(len(relevant_keys))
+        for idx_frame in idx_frame_indics:
+            f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
             frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
             yield(tf.expand_dims(frame, axis=2))
 
@@ -105,7 +125,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
 class_weight = {0: 3639.,
                 1: 1147.}             
 
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch, class_weight=class_weight)
+history_callback = model.fit(training_batch, epochs=int(100),validation_data = validation_batch, class_weight=class_weight)
 
 print('Training done.')
 
@@ -159,15 +179,15 @@ print(acc)
 #saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-np.savetxt('./loss/_l_h.txt', numpy_loss_history, delimiter=",")
+np.savetxt('./loss/alldata_aug_b135_l_h.txt', numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt('./loss/_v_l_h.txt',numpy_val_loss_history, delimiter=",")
+np.savetxt('./loss/alldata_aug_b135_v_l_h.txt',numpy_val_loss_history, delimiter=",")
 
 #saving predictions
-np.savetxt('./class_preds/class_pred.txt',y_pred, delimiter=",")
+np.savetxt('./class_preds/alldata_aug_b135_class_pred.txt',y_pred, delimiter=",")
 
 '''
 #image test frame
