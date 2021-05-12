@@ -95,22 +95,22 @@ test_dataset = tf.data.Dataset.from_generator(generator = lambda: my_test_genera
                                         output_shapes = (frame_size))
 
 
-print(training_dataset)
+
 training_batch = training_dataset.shuffle(buffer_size=1024).batch(t_b_size)
 validation_batch = validation_dataset.shuffle(buffer_size=1024).batch(t_b_size)
 test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
 
 ## build the network layers
 features_input = tf.keras.Input(shape=frame_size) # add 1 channel because it is black or white shape=(None, 52, 58, 1)
-print(features_input)
+
 
 #Pad with zeros to make nicely divisible shape
 features = tf.keras.layers.ZeroPadding2D(padding=(1, 4))(features_input)
-print(features)
+
 
 #First we go down the layers
 features_block_1 = tf.keras.layers.Conv2D(32, 3, activation='relu',padding='SAME')(features) #32 filters and 7x7 kernel size. (None,60,60,32)
-print(features)
+
 
 #batch normalisation
 features_block_1 = tf.keras.layers.BatchNormalization()(features_block_1)
@@ -125,10 +125,10 @@ features_block_3 = features + features_block_2
 
 #If you don't specify strides it will default to pool size
 features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(2, 2),padding='SAME')(features_block_3) 
-print(features)
+
 
 features_block_4 = tf.keras.layers.Conv2D(64, 3, activation='relu',padding='SAME')(features) #(None,30,30,64) 
-print(features_block_1)
+
 
 features_block_4 = tf.keras.layers.BatchNormalization()(features_block_4)
 
@@ -142,10 +142,10 @@ features_block_6 = features + features_block_5
 
 #Reducing size again
 features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(2, 2),padding='SAME')(features_block_6) 
-print(features)
+
 
 features_block_7 = tf.keras.layers.Conv2D(128, 3, activation='relu',padding='SAME')(features) #(None,15,15,128) 
-print(features_block_1)
+
 
 features_block_7 = tf.keras.layers.BatchNormalization()(features_block_7)
 
@@ -158,10 +158,10 @@ features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(fea
 features_block_9 = features + features_block_8
 
 features = tf.keras.layers.MaxPool2D(pool_size=(3, 3),strides=(3, 3),padding='SAME')(features_block_9) 
-print(features)
+
 #Change to 384 filters when it starts to actually work
 features_block_10 = tf.keras.layers.Conv2D(384, 3, activation='relu',padding='SAME')(features) #(None,5,5,384) 
-print(features_block_1)
+
 
 features_block_10 = tf.keras.layers.BatchNormalization()(features_block_10)
 
@@ -180,7 +180,7 @@ features_block_13 = features + features_block_12
 #Then we go back up the layers
 #Upsampling layer 1
 features_block_14 = tf.keras.layers.Conv2DTranspose(128, strides=(3,3), kernel_size = (3,3), activation='relu')(features_block_13) + features_block_9 # (None,15,15,128)
-print(features_block_14)
+
 
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features_block_14)
 features = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(features)
@@ -192,7 +192,7 @@ features_block_16 = features + features_block_15
 
 #Upsampling layer 2
 features_block_17 = tf.keras.layers.Conv2DTranspose(64, strides=(2,2), kernel_size = (2,2), activation='relu')(features_block_16) + features_block_6 # (None,30,30,64)
-print(features_block_17)
+
 
 features_block_17 = tf.keras.layers.BatchNormalization()(features_block_17)
 
@@ -206,7 +206,7 @@ features_block_19 = features + features_block_18
 
 #Upsampling layer 3
 features_block_20 = tf.keras.layers.Conv2DTranspose(32, strides=(2,2), kernel_size = (2,2), activation='relu')(features_block_19) + features_block_3 # (None,60,60,32)
-print(features_block_20)
+
 
 features_block_20 = tf.keras.layers.BatchNormalization()(features_block_20)
 
@@ -219,10 +219,9 @@ features = tf.keras.layers.Conv2D(32, 3, activation='relu', padding='same')(feat
 features_block_22 = features + features_block_21
 
 features_up_b_1 = tf.keras.layers.Conv2DTranspose(32, 3,padding='SAME')(features_block_22) # size (None, 52, 58, 32)
-print(features_up_b_1)
+
 
 features_up_b_2 = tf.keras.layers.Conv2DTranspose(1, 3, activation='sigmoid',padding='SAME')(features_up_b_1) # size (None, 52, 58, 32)
-print(features_up_b_2)
 
 #crop to get correct output shape
 features_end = tf.keras.layers.Cropping2D(cropping=((1, 1), (4, 4)))(features_up_b_2)
@@ -251,36 +250,35 @@ print('Training done.')
 #try a frame to test the model
 y_pred = model.predict(test_batch)
 
+print(y_pred)
 test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
+test_pred = tf.transpose(test_pred, perm=[1, 2, 0])
+print(test_pred)
 # plt.figure(1)
 # plt.imshow(test_pred)
 
 #Put a 0.5 threshold on the prediction
-test_pred_shape = test_pred.shape
-test_pred_mask = tf.Variable(tf.zeros([test_pred_shape[0],test_pred_shape[1],2], tf.int32))
-for i in range (test_pred_shape[0]):
-    for j in range (test_pred_shape[1]):
-        if test_pred[i][j] >= 0.5:
-            test_pred_mask[i,j].assign(1)
+test_pred_mask = tf.Variable(tf.zeros([58,52,2], tf.int32))
+for ind in range(4,6):
+    for i in range (58):
+        for j in range (52):
+            if test_pred[i][j][ind-4] >= 0.5:
+                test_pred_mask[i,j,ind-4].assign(1)
 
-plt.figure(2) #image the binary mask
-test_pred_mask = tf.image.convert_image_dtype(test_pred_mask, tf.int32)
-plt.imshow(test_pred_mask) 
-np.savetxt('./pred_masks/pred_mask.txt', tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
+# plt.figure(2) #image the binary mask
+# test_pred_mask = tf.image.convert_image_dtype(test_pred_mask, tf.int32)
+# plt.imshow(test_pred_mask) 
+# np.savetxt('./pred_masks/pred_mask.txt', tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
 
 
-#need to take the consensus label as truth
-# l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
-# l1_dataset = 'label_%04d_%03d_01' % (iSbj, frame_indic)
-# l2_dataset = 'label_%04d_%03d_02' % (iSbj, frame_indic)
+#Dealing with test data
 
-maj_label = tf.Variable(tf.zeros([sum_of_labs_shape[0],sum_of_labs_shape[1],2], tf.int32))
-stck_sum_of_labs = tf.Variable(tf.zeros([sum_of_labs_shape[0],sum_of_labs_shape[1],2], tf.int32))
+
+maj_label = tf.Variable(tf.zeros([58,52,2], tf.int32))
+# stck_sum_of_labs = tf.Variable(tf.zeros([58,52,2], tf.int32))
 
 for ind in range(4,6):
-# l0_dataset = 'label_%04d_%03d_00' % (191, 4)
-# l1_dataset = 'label_%04d_%03d_01' % (191, 4)
-# l2_dataset = 'label_%04d_%03d_02' % (191, 4)
+    #need to take the consensus label as truth
     l0_dataset = 'label_%04d_%03d_00' % (191, ind)
     l1_dataset = 'label_%04d_%03d_01' % (191, ind)
     l2_dataset = 'label_%04d_%03d_02' % (191, ind)
@@ -288,34 +286,45 @@ for ind in range(4,6):
     label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
     label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
     label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+    print(tf.math.reduce_max(label0))
+    print(tf.math.reduce_max(label1))
+    print(tf.math.reduce_max(label2))
     sum_of_labs = label0+label1+label2
     
     for i in range (58):
         for j in range (52):
             if sum_of_labs[i][j] >= 2:
                 maj_label[i,j,ind-4].assign(1)
+    print(maj_label)
+    print(tf.math.reduce_max(maj_label))
 
 #Image the corresponding frame and label
-test_frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0191_004' ),255)
-test_frame_img = tf.image.convert_image_dtype(test_frame, tf.float32)
-plt.figure(3)
-plt.imshow(test_frame_img)
-maj_label_img = tf.image.convert_image_dtype(maj_label, tf.int32)
-plt.figure(4)
-plt.imshow(maj_label_img)
+# test_frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'frame_0191_004' ),255)
+# test_frame_img = tf.image.convert_image_dtype(test_frame, tf.float32)
+# plt.figure(3)
+# plt.imshow(test_frame_img)
+maj_label = tf.image.convert_image_dtype(maj_label, tf.int32)
+# plt.figure(4)
+# plt.imshow(maj_label_img)
 
-print(maj_label_img)
+
+
+# print(maj_label_img)
 print(test_pred_mask)
 
+print(maj_label)
+
 #find out if the points are the same on both (for the mask)
-match = tf.Variable(tf.zeros([58,52], tf.int32))
-for i in range (58):
-    for j in range (52):
-        if maj_label_img[i][j] == test_pred_mask[i][j]:
-            match[i,j].assign(1)
+match = tf.Variable(tf.zeros([58,52,2], tf.int32))
+for ind in range(4,6):
+    for i in range (58):
+        for j in range (52):
+            if maj_label[i][j][ind-4] == test_pred_mask[i][j][ind-4]:
+            # if maj_label[i,j,ind-4] == test_pred_mask[i,j,ind-4]:
+                match[i,j,ind-4].assign(1)
 print(match)
 print(tf.math.reduce_sum(match))
-print(tf.math.reduce_sum(match)/(58*52))
+print(tf.math.reduce_sum(match)/(58*52*2))
 
 #saving training loss logs
 loss_history = history_callback.history["loss"]
