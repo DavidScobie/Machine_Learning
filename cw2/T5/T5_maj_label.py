@@ -38,24 +38,39 @@ def my_data_generator(subject_indices):
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
 
         if len(relevant_keys) > 1: #case 64 only has 1 frame
+
             #Instead of for loop through all, just do 1 frame
-            frame_indic = np.random.randint(0,high=len(relevant_keys)) 
+            frame_indic = np.random.randint(0,high=len(relevant_keys))
 
             f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
             frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
             
-            #randomly pick one label from the 3
-            label_indic = np.random.randint(0,high=2) 
-            lab_dataset = 'label_%04d_%03d_%02d' % (iSbj, frame_indic, label_indic)
-            label = tf.cast(tf.keras.utils.HDF5Matrix(filename, lab_dataset),dtype=tf.float32)
-            
+            #majority voting
+            l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
+            l1_dataset = 'label_%04d_%03d_01' % (iSbj, frame_indic)
+            l2_dataset = 'label_%04d_%03d_02' % (iSbj, frame_indic)
+
+            label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+            label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
+            label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+            # print(tf.math.reduce_max(label0+label1+label2))
+            # print(label0+label1+label2)
+            sum_of_labs = label0+label1+label2
+
+            sum_of_labs_shape = sum_of_labs.shape
+            maj_label = tf.Variable(tf.zeros([sum_of_labs_shape[0],sum_of_labs_shape[1]], tf.int32))
+            for i in range (sum_of_labs_shape[0]):
+                for j in range (sum_of_labs_shape[1]):
+                    if sum_of_labs[i][j] >= 2:
+                        maj_label[i,j].assign(1)
+
             #data augmentation
             ran_num = np.random.randint(1,high=100)
             if ran_num <= 20:
                     # Add the image to a batch
                 image = tf.expand_dims(frame, 0)
                 image = tf.expand_dims(image, 3)
-                mask = tf.expand_dims(label, 0)
+                mask = tf.expand_dims(maj_label, 0)
                 mask = tf.expand_dims(mask, 3)
 
                 seed = np.random.randint(10,high=100000)
@@ -66,9 +81,9 @@ def my_data_generator(subject_indices):
                 y=imagegen2.next()
 
                 frame = tf.squeeze(tf.convert_to_tensor(x[0]))
-                label = tf.squeeze(tf.convert_to_tensor(y[0]))
+                maj_label = tf.squeeze(tf.convert_to_tensor(y[0]))
 
-            yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label, axis=2))
+            yield(tf.expand_dims(frame, axis=2), tf.expand_dims(maj_label, axis=2))
 
 
 def my_test_generator(subject_indices):
@@ -364,5 +379,5 @@ numpy_val_loss_history = np.array(val_loss_history)
 val_loss_fname = './loss/val_loss_history.txt' 
 np.savetxt(val_loss_fname,numpy_val_loss_history, delimiter=",")
 
-plt.show()
+# plt.show()
 

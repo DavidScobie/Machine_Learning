@@ -13,7 +13,7 @@ filename = './data/dataset70-200.h5'
 
 lab = 0
 count = 0
-for iSbj in range(192,193):
+for iSbj in range(180,200):
     relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
     idx_frame_indics = range(len(relevant_keys))
     for idx_frame in idx_frame_indics:
@@ -38,7 +38,7 @@ for iSbj in range(192,193):
             if is0+is1+is2 >= 2: #yes loop
                 lab = lab + 1
                 is_it = 1
-            print(is_it)
+            # print(is_it)
 print(count)
 print(lab)           
             
