@@ -22,7 +22,7 @@ num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
 training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
-test_indices = range(195,200)
+test_indices = range(190,200)
 
 #Define augmentation image data generator
 datagen=ImageDataGenerator(rotation_range=90,
@@ -38,38 +38,24 @@ def my_data_generator(subject_indices):
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
 
         if len(relevant_keys) > 1: #case 64 only has 1 frame
-
             #Instead of for loop through all, just do 1 frame
-            frame_indic = np.random.randint(0,high=len(relevant_keys))
+            frame_indic = np.random.randint(0,high=len(relevant_keys)) 
 
             f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
             frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
             
-            #majority voting
-            l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
-            l1_dataset = 'label_%04d_%03d_01' % (iSbj, frame_indic)
-            l2_dataset = 'label_%04d_%03d_02' % (iSbj, frame_indic)
-
-            label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-            label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
-            label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
-
-            sum_of_labs = label0+label1+label2
-
-            sum_of_labs_shape = sum_of_labs.shape
-            maj_label = tf.Variable(tf.zeros([sum_of_labs_shape[0],sum_of_labs_shape[1]], tf.int32))
-            for i in range (sum_of_labs_shape[0]):
-                for j in range (sum_of_labs_shape[1]):
-                    if sum_of_labs[i][j] >= 2:
-                        maj_label[i,j].assign(1)
-
+            #randomly pick one label from the 3
+            label_indic = np.random.randint(0,high=2) 
+            lab_dataset = 'label_%04d_%03d_%02d' % (iSbj, frame_indic, label_indic)
+            label = tf.cast(tf.keras.utils.HDF5Matrix(filename, lab_dataset),dtype=tf.float32)
+            
             #data augmentation
             ran_num = np.random.randint(1,high=100)
             if ran_num <= 20:
                     # Add the image to a batch
                 image = tf.expand_dims(frame, 0)
                 image = tf.expand_dims(image, 3)
-                mask = tf.expand_dims(maj_label, 0)
+                mask = tf.expand_dims(label, 0)
                 mask = tf.expand_dims(mask, 3)
 
                 seed = np.random.randint(10,high=100000)
@@ -80,9 +66,9 @@ def my_data_generator(subject_indices):
                 y=imagegen2.next()
 
                 frame = tf.squeeze(tf.convert_to_tensor(x[0]))
-                maj_label = tf.squeeze(tf.convert_to_tensor(y[0]))
+                label = tf.squeeze(tf.convert_to_tensor(y[0]))
 
-            yield(tf.expand_dims(frame, axis=2), tf.expand_dims(maj_label, axis=2))
+            yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label, axis=2))
 
 
 def my_test_generator(subject_indices):
@@ -272,8 +258,8 @@ test_pred = tf.transpose(test_pred, perm=[1, 2, 0])
 print(test_pred)
 
 #Put a 0.5 threshold on the prediction
-test_pred_mask = tf.Variable(tf.zeros([58,52,141], tf.int32))
-for ind in range(141):
+test_pred_mask = tf.Variable(tf.zeros([58,52,271], tf.int32))
+for ind in range(271):
     print(ind)
     for i in range (58):
         for j in range (52):
@@ -284,7 +270,7 @@ print('done 1st loop')
 #Dealing with test data
 
 
-maj_label = tf.Variable(tf.zeros([58,52,141], tf.int32))
+maj_label = tf.Variable(tf.zeros([58,52,271], tf.int32))
 
 
 
@@ -319,8 +305,8 @@ print('done 2nd loop')
 maj_label = tf.image.convert_image_dtype(maj_label, tf.int32)
 
 #find out if the points are the same on both (for the mask)
-match = tf.Variable(tf.zeros([58,52,141], tf.int32))
-for ind in range(141):
+match = tf.Variable(tf.zeros([58,52,271], tf.int32))
+for ind in range(271):
     print(ind)
     for i in range (58):
         for j in range (52):
@@ -330,18 +316,18 @@ for ind in range(141):
 
 print('done 3rd loop') 
 
-print(tf.math.reduce_sum(match)/(58*52*141))
+print(tf.math.reduce_sum(match)/(58*52*271))
 
 #saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-loss_fname = './loss/T5_maj_lab_l_h.txt' 
+loss_fname = './loss/T5_rand_frame_l_h.txt' 
 np.savetxt(loss_fname, numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-val_loss_fname = './loss/T5_maj_lab_v_l_h.txt' 
+val_loss_fname = './loss/T5_rand_frame_v_l_h.txt' 
 np.savetxt(val_loss_fname,numpy_val_loss_history, delimiter=",")
 
 #now we want to put 1 frame in as test and save the pixels as a arrays
@@ -375,7 +361,7 @@ for i in range (58):
             test_pred_mask[i,j].assign(1)
 
 #saving the prediction mask
-mask_fname = './pred_masks/T5_maj_lab_p_m.txt' 
+mask_fname = './pred_masks/T5_rand_frame_p_m.txt' 
 np.savetxt(mask_fname, tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
 
 #now I need to save the majority label
@@ -399,13 +385,13 @@ for i in range (58):
 maj_label2 = tf.image.convert_image_dtype(maj_label2, tf.int32)
 
 #saving the majority mask
-maj_vote_fname = './pred_masks/T5_maj_lab_m_v.txt' 
+maj_vote_fname = './pred_masks/T5_rand_frame_m_v.txt' 
 np.savetxt(maj_vote_fname, maj_label2.numpy())
 
 
 #I also want to save the models
-json_filename = './jsons/T5_maj_lab.json'
-weights_filename = './weights/T5_maj_lab_w.h5'
+json_filename = './jsons/T5_rand_frame.json'
+weights_filename = './weights/T5_rand_frame_weights.h5'
 # serialize model to JSON
 model_json = model.to_json()
 with open(json_filename, "w") as json_file:
@@ -417,3 +403,4 @@ print("Saved model to disk")
 
 
 print('done')
+
