@@ -36,42 +36,50 @@ keys = f.keys()
 
 filename = './data/dataset70-200.h5'
 frame_size = [58,52,1]
-test_indices = range(191,192)
 
-def my_test_generator(subject_indices):
-    for iSbj in subject_indices:
-        # idx_frame_indics = range(num_subjects)
-        relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-        # idx_frame_indics = range(len(relevant_keys))
-        idx_frame_indics= range(4,5)
-        for idx_frame in idx_frame_indics:
-            f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
-            frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
-            yield(tf.expand_dims(frame, axis=2))
+biggun = tf.Variable(tf.zeros([10,58,52], tf.float32))
+for i in range (10):
+    test_indices = range(189+i,190+i)
 
-test_dataset = tf.data.Dataset.from_generator(generator = lambda: my_test_generator(subject_indices=test_indices), 
-                                        output_types = (tf.float32),
-                                        output_shapes = (frame_size))
+    def my_test_generator(subject_indices):
+        for iSbj in subject_indices:
+            # idx_frame_indics = range(num_subjects)
+            relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
+            # idx_frame_indics = range(len(relevant_keys))
+            idx_frame_indics= range(4,5)
+            for idx_frame in idx_frame_indics:
+                f_dataset = 'frame_%04d_%03d' % (iSbj, idx_frame)
+                frame = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255)
+                yield(tf.expand_dims(frame, axis=2))
 
-test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
+    test_dataset = tf.data.Dataset.from_generator(generator = lambda: my_test_generator(subject_indices=test_indices), 
+                                            output_types = (tf.float32),
+                                            output_shapes = (frame_size))
 
-y_pred = model.predict(test_batch)
+    test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
 
-test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
+    y_pred = model.predict(test_batch)
+    print(y_pred)
 
-plt.figure(1)
-plt.imshow(test_pred)
+    biggun[i,:,:].assign(tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32)))
+
+
+print(biggun)
+
+for i in range (10):
+    plt.figure(i+1)
+    plt.imshow(biggun[i,:,:])
 
 
 
-pred_array = np.reshape(test_pred,(3016,1))
+# pred_array = np.reshape(test_pred,(3016,1))
 
-mean = (pred_array + true_array)/2 
-diff = true_array - pred_array
+# mean = (pred_array + true_array)/2 
+# diff = true_array - pred_array
 
-plt.figure(2)
-plt.plot(mean,diff, 'bo')
-plt.xlabel('mean')
-plt.ylabel('difference')
+# plt.figure(2)
+# plt.plot(mean,diff, 'bo')
+# plt.xlabel('mean')
+# plt.ylabel('difference')
 
 plt.show()
