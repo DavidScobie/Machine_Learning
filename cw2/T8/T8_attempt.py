@@ -68,7 +68,8 @@ def my_data_generator(subject_indices):
 
             test_batch_T7 = test_dataset_T7.shuffle(buffer_size=1024).batch(1)
             y_pred = model_T7.predict(test_batch_T7)
-            print(y_pred)
+
+            #Only if the class predicts a prostate do we do segmentation
             if y_pred >= 0.5:
 
                 f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
