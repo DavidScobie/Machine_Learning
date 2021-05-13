@@ -34,18 +34,20 @@ keys = f.keys()
 
 filename = './data/dataset70-200.h5'
 
-n_frames = 2
+n_frames = 3
 test_indices = range(190,191)
 
 #Now I want to see whether the frame is classified as prostate containing
 # y_pred_T7 = model_T7.predict(test_batch)
 # print(y_pred_T7)
 
+count = -1
+match = tf.Variable(tf.zeros([58,52,n_frames], tf.int32))
 
 for iSbj in test_indices:
     relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
     # idx_frame_indics = range(len(relevant_keys))
-    idx_frame_indics= range(4,6)
+    idx_frame_indics= range(4,7)
     for idx_frame in idx_frame_indics:
 
         def my_test_generator():
@@ -60,7 +62,7 @@ for iSbj in test_indices:
         test_batch = test_dataset.shuffle(buffer_size=1024).batch(1)
 
         y_pred_T7 = model_T7.predict(test_batch)
-        print(y_pred_T7)
+        # print(y_pred_T7)
 
         if y_pred_T7 >= 0.5:
             #In here we have only frames with prostates so we look at segmentation prediction
@@ -70,71 +72,77 @@ for iSbj in test_indices:
             
             #First of all we rearrange test pred dimensions
             test_pred = tf.squeeze(tf.image.convert_image_dtype(y_pred, tf.float32))
-            print(test_pred)
+            # print(test_pred)
 
-            test_pred = tf.transpose(test_pred, perm=[1, 2, 0])
-            print(test_pred)
+            # test_pred = tf.transpose(test_pred, perm=[1, 2, 0])
+            # print(test_pred)
 
             #Put a 0.5 threshold on the test prediction
-            test_pred_mask = tf.Variable(tf.zeros([58,52,n_frames], tf.int32))
-            for ind in range(n_frames):
-                print(ind)
-                for i in range (58):
-                    for j in range (52):
-                        if test_pred[i][j][ind] >= 0.5:
-                            test_pred_mask[i,j,ind].assign(1)
+            test_pred_mask = tf.Variable(tf.zeros([58,52], tf.int32))
+            # for ind in range(n_frames):
+            #     print(ind)
+            for i in range (58):
+                for j in range (52):
+                    if test_pred[i][j] >= 0.5:
+                        test_pred_mask[i,j].assign(1)
 
             print('done 1st loop')
             
 
             #Dealing with the truth labels now (finding majority)
-            maj_label = tf.Variable(tf.zeros([58,52,n_frames], tf.int32))
+            maj_label = tf.Variable(tf.zeros([58,52], tf.int32))
 
-            count = -1
-            for subj in test_indices:
-                relevant_keys = [s for s in keys if 'frame_%04d_' % (subj) in s]
-                # idx_frame_indics = range(len(relevant_keys))
-                idx_frame_indics = range(4,6)
-                for ind in idx_frame_indics:
-                    print(ind)
-                    #need to take the consensus label as truth
-                    l0_dataset = 'label_%04d_%03d_00' % (subj, ind)
-                    l1_dataset = 'label_%04d_%03d_01' % (subj, ind)
-                    l2_dataset = 'label_%04d_%03d_02' % (subj, ind)
+            # count = -1
 
-                    label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-                    label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
-                    label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+            # for subj in test_indices:
+            #     relevant_keys = [s for s in keys if 'frame_%04d_' % (subj) in s]
+            #     # idx_frame_indics = range(len(relevant_keys))
+            #     idx_frame_indics = range(4,6)
+            #     for ind in idx_frame_indics:
+            #         print(ind)
 
-                    sum_of_labs = label0+label1+label2
+            #need to take the consensus label as truth
+            l0_dataset = 'label_%04d_%03d_00' % (iSbj, idx_frame)
+            l1_dataset = 'label_%04d_%03d_01' % (iSbj, idx_frame)
+            l2_dataset = 'label_%04d_%03d_02' % (iSbj, idx_frame)
 
-                    count = count + 1
-                    
-                    
-                    for i in range (58):
-                        for j in range (52):
-                            if sum_of_labs[i][j] >= 2:
-                                maj_label[i,j,count].assign(1)
+            label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+            label1 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l1_dataset),dtype=tf.float32)
+            label2 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l2_dataset),dtype=tf.float32)
+
+            sum_of_labs = label0+label1+label2
+
+            # count = count + 1
+            
+            
+            for i in range (58):
+                for j in range (52):
+                    if sum_of_labs[i][j] >= 2:
+                        maj_label[i,j].assign(1)
 
             print('done 2nd loop')
 
             maj_label = tf.image.convert_image_dtype(maj_label, tf.int32)
 
             #find out if the points are the same on both the mask and majority
-            match = tf.Variable(tf.zeros([58,52,n_frames], tf.int32))
-            for ind in range(n_frames):
-                print(ind)
-                for i in range (58):
-                    for j in range (52):
-                        if maj_label[i][j][ind] == test_pred_mask[i][j][ind]:
-                        
-                            match[i,j,ind].assign(1)
+            
+            # for ind in range(n_frames):
+            #     print(ind)
+
+            count = count + 1
+            print(count)
+            for i in range (58):
+                for j in range (52):
+                    if maj_label[i][j] == test_pred_mask[i][j]:
+                    
+                        match[i,j,count].assign(1)
 
             print('done 3rd loop') 
 
-            #Sum the match matrix to find the accuracy 
-            print('Accuracy: ',tf.math.reduce_sum(match)/(58*52*n_frames))
-        '''
+#Sum the match matrix to find the accuracy 
+print(match)
+print('Accuracy: ',tf.math.reduce_sum(match)/(58*52*n_frames))
+'''
             #now we want to put 1 frame in as test and save the pixels as a arrays
             test_indicies2 = range(191,192)
 
