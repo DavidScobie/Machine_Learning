@@ -53,7 +53,7 @@ def my_test_generator(subject_indices):
     for iSbj in subject_indices:
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
         if len(relevant_keys) > 1: #case 64 only has 1 frame
-            all_frame_indics = len(relevant_keys)-1
+            all_frame_indics = len(relevant_keys)
             for frame_indic in range(all_frame_indics):
                 f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
                 print(f_dataset)
@@ -102,7 +102,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
 class_weight = {0: 3639.,
                 1: 1147.}             
 
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch, class_weight=class_weight)
+history_callback = model.fit(training_batch, epochs=int(600),validation_data = validation_batch, class_weight=class_weight)
 
 print('Training done.')
 
@@ -119,7 +119,7 @@ val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
 np.savetxt('./loss/T7_opti_b135_600_v_l_h.txt',numpy_val_loss_history, delimiter=",")
 
-#saving test predictions
+#saving test class predictions
 np.savetxt('./class_preds/T7_opti_b135_600_c_p.txt',y_pred, delimiter=",")
 
 
