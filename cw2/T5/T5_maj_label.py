@@ -22,7 +22,7 @@ num_training = int(tf.math.floor(num_subjects*(1-validation_split)).numpy())
 num_validation = num_subjects - num_training
 training_indices = range(num_training)
 validation_indices = range(num_training,num_subjects)
-test_indices = range(195,200)
+test_indices = range(190,200)
 
 #Define augmentation image data generator
 datagen=ImageDataGenerator(rotation_range=90,
@@ -272,8 +272,8 @@ test_pred = tf.transpose(test_pred, perm=[1, 2, 0])
 print(test_pred)
 
 #Put a 0.5 threshold on the prediction
-test_pred_mask = tf.Variable(tf.zeros([58,52,141], tf.int32))
-for ind in range(141):
+test_pred_mask = tf.Variable(tf.zeros([58,52,271], tf.int32))
+for ind in range(271):
     print(ind)
     for i in range (58):
         for j in range (52):
@@ -284,7 +284,7 @@ print('done 1st loop')
 #Dealing with test data
 
 
-maj_label = tf.Variable(tf.zeros([58,52,141], tf.int32))
+maj_label = tf.Variable(tf.zeros([58,52,271], tf.int32))
 
 
 
@@ -319,8 +319,8 @@ print('done 2nd loop')
 maj_label = tf.image.convert_image_dtype(maj_label, tf.int32)
 
 #find out if the points are the same on both (for the mask)
-match = tf.Variable(tf.zeros([58,52,141], tf.int32))
-for ind in range(141):
+match = tf.Variable(tf.zeros([58,52,271], tf.int32))
+for ind in range(271):
     print(ind)
     for i in range (58):
         for j in range (52):
@@ -330,7 +330,7 @@ for ind in range(141):
 
 print('done 3rd loop') 
 
-print(tf.math.reduce_sum(match)/(58*52*141))
+print(tf.math.reduce_sum(match)/(58*52*271))
 
 #saving training loss logs
 loss_history = history_callback.history["loss"]
