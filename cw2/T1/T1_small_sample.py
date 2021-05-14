@@ -1,5 +1,3 @@
-import os
-import random
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as kb
 import tensorflow as tf
@@ -218,7 +216,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
               metrics=['MeanAbsoluteError'])
 
 #don't bother with shuffling and batches for now
-history_callback = model.fit(training_batch, epochs=int(3),validation_data = validation_batch)
+history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch)
 print('Training done.')
 
 #try a frame to test the model
@@ -241,7 +239,8 @@ for i in range (test_pred_shape[0]):
 
 plt.figure(2)
 plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32))
-np.savetxt(os.path.join('pred_masks', 'pred_mask.txt'), tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
+# np.savetxt(os.path.join('pred_masks', 'pred_mask.txt'), tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
+np.savetxt('./pred_masks/pred_mask.txt',tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy(), delimiter=",")
 
 #Image the corresponding frame and label
 test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_00' ),255)
@@ -264,11 +263,11 @@ plt.imshow(test_frame_img)
 #saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-np.savetxt(os.path.join('loss', 'loss_history.txt'), numpy_loss_history, delimiter=",")
+np.savetxt('./loss/loss_history.txt', numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt(os.path.join('loss', 'val_loss_history.txt'), numpy_val_loss_history, delimiter=",")
+np.savetxt('./loss/val_loss_history.txt', numpy_val_loss_history, delimiter=",")
 
 plt.show()

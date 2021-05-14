@@ -10,12 +10,12 @@ from tensorflow.keras.models import model_from_json
 #I want to check what the result of model.predict is for classification
 
 #First I want to load the classification model in
-json_file = open('./T5_T7_from_cluster/jsons/T7_opti_b135_600.json', 'r') 
+json_file = open('./T5_T7_from_cluster/jsons/T7_try_again.json', 'r') 
 loaded_model_json = json_file.read()
 json_file.close()
 model_T7 = model_from_json(loaded_model_json)
 # load weights into new model
-model_T7.load_weights('./T5_T7_from_cluster/weights/T7_opti_b135_600_w.h5') 
+model_T7.load_weights('./T5_T7_from_cluster/weights/T7_try_again_w.h5') 
 print("Loaded T7 model from disk")
 
 # Now I want to load the segmentation model in
@@ -34,23 +34,26 @@ keys = f.keys()
 
 filename = './data/dataset70-200.h5'
 
-n_frames = 271
-test_indices = range(190,200)
+n_frames = 3
+test_indices = range(199,200)
 
 #Now I want to see whether the frame is classified as prostate containing
 
-class_thresh_array = np.array([0.5003,0.50035,0.5004,0.50045,0.5005,0.50055,0.5006,0.50065])
-# class_thresh_array = np.array([0.5,0.50062,0.500647,0.5007])
+class_thresh_array = np.array([0.0,0.3,0.4,0.5,0.6,0.7]) #0 in there as we need 'no pre-screening' case
+
+accs = np.zeros([len(class_thresh_array)])
+accs_count = -1
 
 for class_thresh in class_thresh_array:
 
+    accs_count = accs_count + 1
     count = -1
     match = tf.Variable(tf.zeros([58,52,n_frames], tf.int32))
 
     for iSbj in test_indices:
         relevant_keys = [s for s in keys if 'frame_%04d_' % (iSbj) in s]
-        idx_frame_indics = range(len(relevant_keys))
-        # idx_frame_indics= range(4,7)
+        # idx_frame_indics = range(len(relevant_keys))
+        idx_frame_indics= range(4,7)
         for idx_frame in idx_frame_indics:
 
             def my_test_generator():
@@ -121,13 +124,36 @@ for class_thresh in class_thresh_array:
                         
                             match[i,j,count].assign(1)
 
-                # print(count)
+                print(count)
 
     #Sum the match matrix to find the accuracy 
     print('Accuracy: ',tf.math.reduce_sum(match)/(58*52*(count+1)))
 
     #Print how many frames got accuracy found
-    print('how many frames',count)
+    print('how many frames:',count,'with threshold of:',class_thresh)
+
+    #store the accuracies
+    accs[accs_count] = tf.math.reduce_sum(match)/(58*52*(count+1))
+print(accs)
+
+#save the accuracies 
+np.savetxt('./accs/accuracies.txt',accs, delimiter=",")
+
+#bland altman plot
+diff = accs - accs[0]
+avg = (accs + accs[0])/2
+
+plt.figure(0)
+plt.plot(avg,diff, 'bo')
+plt.xlabel('average of accuracy')
+plt.ylabel('difference in accuracy')
+
+plt.figure(1)
+plt.plot(class_thresh_array,accs, 'bo')
+plt.xlabel('classification threshold')
+plt.ylabel('accuracy')
+
+plt.show()
 
 
 

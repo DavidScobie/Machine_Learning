@@ -1,11 +1,8 @@
-import os
-import random
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as kb
 import tensorflow as tf
 import numpy as np 
 import h5py
-import random as rd
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 f = h5py.File('./data/dataset70-200.h5','r')
@@ -55,7 +52,7 @@ def my_data_generator(subject_indices):
             label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
            
             #data augmentation
-            ran_num = rd.randint(1,100)
+            ran_num = np.random.randint(1,high=100)  
             if ran_num <= 20:
                 # Add the image to a batch
                 image = tf.expand_dims(frame, 0)
@@ -63,7 +60,7 @@ def my_data_generator(subject_indices):
                 mask = tf.expand_dims(label0, 0)
                 mask = tf.expand_dims(mask, 3)
 
-                seed = rd.randint(10,100000)
+                seed = np.random.randint(10,high=100000)  
                 imagegen=datagen.flow(image,batch_size=t_b_size,seed=seed)
                 imagegen2=datagen.flow(mask,batch_size=t_b_size,seed=seed)
 
@@ -271,7 +268,7 @@ for i in range (test_pred_shape[0]):
 
 plt.figure(2)
 plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32))
-np.savetxt(os.path.join('pred_masks', 'pred_mask.txt'), tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
+np.savetxt('./pred_masks/pred_mask.txt', tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
 
 #Image the corresponding frame and label
 test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_00' ),255)
@@ -291,14 +288,13 @@ plt.imshow(test_label_2_img)
 plt.figure(6)
 plt.imshow(test_frame_img)
 
-#saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-np.savetxt(os.path.join('loss', 'loss_history.txt'), numpy_loss_history, delimiter=",")
+np.savetxt('./loss/loss_history.txt', numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt(os.path.join('loss', 'val_loss_history.txt'), numpy_val_loss_history, delimiter=",")
+np.savetxt('./loss/val_loss_history.txt', numpy_val_loss_history, delimiter=",")
 
 plt.show()

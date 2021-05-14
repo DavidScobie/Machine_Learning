@@ -1,5 +1,4 @@
-import os
-import random
+
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as kb
 import tensorflow as tf

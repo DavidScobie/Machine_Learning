@@ -1,17 +1,14 @@
-import os
-import random
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as kb
 import tensorflow as tf
 import numpy as np 
 import h5py
-import random as rd
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 f = h5py.File('./data/dataset70-200.h5','r')
 keys = f.keys()
 
-num_subjects = 200
+num_subjects = 180
 filename = './data/dataset70-200.h5'
 subject_indices = range(num_subjects)
 
@@ -50,35 +47,35 @@ def my_data_generator(subject_indices):
 
         # idx_frame_indics = range(len(relevant_keys))
         # for idx_frame in idx_frame_indics:
+        if len(relevant_keys) > 1: #case 64 only has 1 frame
+            #Instead of for loop through all, just do 1 frame
+            frame_indic = np.random.randint(0,high=len(relevant_keys))  
 
-        #Instead of for loop through all, just do 1 frame
-        frame_indic = rd.randint(0,len(relevant_keys)-1)
-
-        f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
-        frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
-        l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
-        label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
-        
-        #data augmentation
-        ran_num = rd.randint(1,100)
-        if ran_num <= 20:
+            f_dataset = 'frame_%04d_%03d' % (iSbj, frame_indic)
+            frame = tf.cast(tf.math.divide(tf.keras.utils.HDF5Matrix(filename, f_dataset), 255),dtype=tf.float32)
+            l0_dataset = 'label_%04d_%03d_00' % (iSbj, frame_indic)
+            label0 = tf.cast(tf.keras.utils.HDF5Matrix(filename, l0_dataset),dtype=tf.float32)
+            
+            #data augmentation
+            ran_num = np.random.randint(1,high=100) 
+            if ran_num <= 20:
                 # Add the image to a batch
-            image = tf.expand_dims(frame, 0)
-            image = tf.expand_dims(image, 3)
-            mask = tf.expand_dims(label0, 0)
-            mask = tf.expand_dims(mask, 3)
+                image = tf.expand_dims(frame, 0)
+                image = tf.expand_dims(image, 3)
+                mask = tf.expand_dims(label0, 0)
+                mask = tf.expand_dims(mask, 3)
 
-            seed = rd.randint(10,100000)
-            imagegen=datagen.flow(image,batch_size=t_b_size,seed=seed)
-            imagegen2=datagen.flow(mask,batch_size=t_b_size,seed=seed)
+                seed = np.random.randint(10,high=100000) 
+                imagegen=datagen.flow(image,batch_size=t_b_size,seed=seed)
+                imagegen2=datagen.flow(mask,batch_size=t_b_size,seed=seed)
 
-            x=imagegen.next()
-            y=imagegen2.next()
+                x=imagegen.next()
+                y=imagegen2.next()
 
-            frame = tf.squeeze(tf.convert_to_tensor(x[0]))
-            label0 = tf.squeeze(tf.convert_to_tensor(y[0]))
+                frame = tf.squeeze(tf.convert_to_tensor(x[0]))
+                label0 = tf.squeeze(tf.convert_to_tensor(y[0]))
 
-        yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
+            yield(tf.expand_dims(frame, axis=2), tf.expand_dims(label0, axis=2))
 
 def my_test_generator(subject_indices):
     for iSbj in subject_indices:
@@ -276,7 +273,7 @@ for i in range (test_pred_shape[0]):
 
 plt.figure(2)
 plt.imshow(tf.image.convert_image_dtype(test_pred_mask, tf.int32))
-np.savetxt(os.path.join('pred_masks', '4ab_pred_mask.txt'), tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
+np.savetxt('./pred_masks/pred_mask.txt', tf.image.convert_image_dtype(test_pred_mask, tf.int32).numpy())
 
 #Image the corresponding frame and label
 test_label_0 = tf.math.divide(tf.keras.utils.HDF5Matrix(filename, 'label_0191_004_00' ),255)
@@ -296,14 +293,13 @@ plt.imshow(test_label_2_img)
 plt.figure(6)
 plt.imshow(test_frame_img)
 
-#saving training loss logs
 loss_history = history_callback.history["loss"]
 numpy_loss_history = np.array(loss_history)
-np.savetxt(os.path.join('loss', '4ab_loss_history.txt'), numpy_loss_history, delimiter=",")
+np.savetxt('./loss/loss_history.txt', numpy_loss_history, delimiter=",")
 
 #saving validation loss logs
 val_loss_history = history_callback.history["val_loss"]
 numpy_val_loss_history = np.array(val_loss_history)
-np.savetxt(os.path.join('loss', '4ab_val_loss_history.txt'), numpy_val_loss_history, delimiter=",")
+np.savetxt('./loss/val_loss_history.txt', numpy_val_loss_history, delimiter=",")
 
 # plt.show()

@@ -127,10 +127,10 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-6),
 # # class_weight = {0: 3639.,
 # #                 1: 1147.}             
 
-model_save = './T7_try_again.h5'
+model_save = './best_models/T7_try_again.h5'
 callbacks = [tf.keras.callbacks.ModelCheckpoint(model_save, verbose=1, save_best_only = True, save_weights_only = True)]
 
-history_callback = model.fit(training_batch, epochs=int(1),validation_data = validation_batch, callbacks = callbacks)
+history_callback = model.fit(training_batch, epochs=int(100),validation_data = validation_batch, callbacks = callbacks)
 
 print('Training done.')
 
